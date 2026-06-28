@@ -76,3 +76,7 @@ Thumbs.db
 # Mini services logs
 .zscripts/*.log
 mini-service-*.log
+
+# PromptHub runtime files
+.prompthub.pid
+prompthub.log

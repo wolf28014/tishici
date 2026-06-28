@@ -1,0 +1,72 @@
+# ============================================
+# PromptHub systemd 服务文件
+# 功能：开机自动启动 PromptHub 并后台运行
+#
+# 安装方法（需要 root 权限）：
+#
+#   1. 复制此文件到 systemd 目录：
+#      sudo cp prompthub.service /etc/systemd/system/
+#
+#   2. 修改文件中的路径为你实际的路径：
+#      sudo nano /etc/systemd/system/prompthub.service
+#      把 /home/z/my-project 改成你的实际路径
+#
+#   3. 重新加载 systemd：
+#      sudo systemctl daemon-reload
+#
+#   4. 启用开机自启：
+#      sudo systemctl enable prompthub
+#
+#   5. 立即启动服务：
+#      sudo systemctl start prompthub
+#
+#   6. 查看状态：
+#      sudo systemctl status prompthub
+#
+# 常用命令：
+#   启动：sudo systemctl start prompthub
+#   停止：sudo systemctl stop prompthub
+#   重启：sudo systemctl restart prompthub
+#   状态：sudo systemctl status prompthub
+#   查看日志：sudo journalctl -u prompthub -f
+#   禁用开机自启：sudo systemctl disable prompthub
+# ============================================
+
+[Unit]
+Description=PromptHub - AI 提示词库管理应用
+Documentation=https://github.com/wolf28014/tishici
+After=network.target
+
+[Service]
+Type=simple
+User=z
+Group=z
+
+# ⚠️ 修改为你的实际项目路径
+WorkingDirectory=/home/z/my-project
+
+# ⚠️ 修改为你的实际路径（bun 或 npm）
+# 使用 Bun：
+ExecStart=/home/z/.bun/bin/bun run dev
+# 使用 npm：
+# ExecStart=/usr/bin/npm run dev
+
+# 自动重启
+Restart=always
+RestartSec=5
+
+# 环境变量
+Environment=NODE_ENV=development
+Environment=PORT=3005
+Environment=DATABASE_URL=file:./db/custom.db
+
+# 日志
+StandardOutput=journal
+StandardError=journal
+SysIdentifier=prompthub
+
+# 资源限制
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
