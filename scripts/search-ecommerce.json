@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://amzalysis.com/article/llm-prompt",
+    "name": "最强跨境电商Ai提示词Prompt",
+    "snippet": "最强跨境电商Ai提示词Prompt ; 1. 产品经理/选品专员. 产品市场潜力分析 · 任务：评估[产品名称]在[目标市场]的市场潜力和竞争态势 ; 2. 营销人员/广告投放.",
+    "host_name": "amzalysis.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://cloud.tencent.com/developer/article/2580561",
+    "name": "电商详情页文案怎么写？这个AI指令帮你搞定 - 腾讯云",
+    "snippet": "这次分享一个产品详情页生成指令，不是什么神器，就是把专业文案的工作流程梳理清楚了。适合电商运营、产品推广、或者需要写营销文案的开发者朋友。\n电商产品详情页文案撰写全攻略：结构化方法论助你提升转化率。从痛点唤醒到购买保障，5大核心模块标准化输出流程，解决\"不知道写什么、怎么写、写得对不对\"三大难题。",
+    "host_name": "cloud.tencent.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://zhuanlan.zhihu.com/p/2041220490514133615",
+    "name": "如何完成ai生电商图，AI电商主图一键生成免费提示词推荐 - 知乎专栏",
+    "snippet": "如果你不想从零写提示词，可以直接用「机灵助手」小程序。里面已经整理好了电商相关模板，比如白底主图、电商详情图、产品介绍图、护肤品促销 ...",
+    "host_name": "zhuanlan.zhihu.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://m.zcool.com.cn/article/ZMTcwNTc1Ng==.html",
+    "name": "一次找齐！ 1000+电商提示词 - 站酷",
+    "snippet": "1000+真实电商项目打磨的提示词合集，从主图到海报一键复刻，效率直接翻倍！ 工具：zcool. 更多提示词直达：https://www.zcool.com.cn/ai/prompt. 文章信息.",
+    "host_name": "m.zcool.com.cn",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.canva.cn/create/e-commerce-details-pages",
+    "name": "免费在线设计制作电商详情页 - Canva.cn",
+    "snippet": "在线设计平台Canva可画提供了海量的电商详情页设计模板，一整套的模板设计可以帮助你大大减少详情页排版的烦恼，只需选择喜欢的模板进行制作，即可轻松在线设计出精美的电 ...",
+    "host_name": "www.canva.cn",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://guangtao.taobao.com/topic-188413484.html",
+    "name": "AI提示词急救包 - 淘宝逛一逛",
+    "snippet": "昨晚加班到10点，老板临时要3张产品海报图，翻遍小红书找提示词还总被拒稿。试了即梦AI的「职场办公」提示词包，选好风格+粘贴文案，3秒生成5版，挑一张导出就交差，连咖啡都 ...",
+    "host_name": "guangtao.taobao.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://aicodehub.net/tutorial-ecommerce.html",
+    "name": "电商主图与详情图提示词指南 - 爱酷AI",
+    "snippet": "这是效率最高的用法——上传一张商品图，通过结构化提示词，一次性生成详情页所需的全部图片。 操作流程. 上传商品图→ 基于模板生成提示词→ 输入Nano Banana Pro → 批量输出 ...",
+    "host_name": "aicodehub.net",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://kdniao.csdn.net/6a2d797a662f9a54cb7e6d69.html",
+    "name": "怎么找到好用的电商主图AI 提示词？_人工智能 - 快递鸟社区",
+    "snippet": "直接回答：好用的电商主图提示词不靠「找」，靠「攒」——先用一个结构化公式快速写出60 分的提示词，再通过小步迭代把它打磨到90 分，最后沉淀成自己的模板 ...",
+    "host_name": "kdniao.csdn.net",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://help.aliyun.com/zh/document_detail/2856197.html",
+    "name": "以客服场景意图分类为例写Prompt（提示词） - 阿里云帮助文档",
+    "snippet": "本次实验通过设计Prompt（提示词）来实现客服场景意图分类的目的，需在阿里云百炼平台创建一个应用，并在应用中设计Prompt（提示词）并测试调优。",
+    "host_name": "help.aliyun.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.cnblogs.com/huizhudev/p/19161784",
+    "name": "写电商详情页不用挠头了：一个还算实用的AI指令模板 - 博客园",
+    "snippet": "分享一套实用的AI指令模板，用于生成电商产品详情页文案。通过结构化的提示词设计，将详情页拆解为标题、痛点唤醒、产品卖点、使用场景、参数说明、购买 ...",
+    "host_name": "www.cnblogs.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

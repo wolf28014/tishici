@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.wearview.co/zh/virtual-try-on",
+    "name": "AI 虚拟试穿与虚拟模特，仅需15 秒出图 - WearView",
+    "snippet": "从100 多位多元化虚拟服装模特中选择——不同族裔、体型、年龄和姿势。选择与您品牌相匹配的专业背景。或上传您自己的模特照片以获得一致的电商视觉效果。",
+    "host_name": "www.wearview.co",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "http://market.aliyun.com/products/57124001/cmapi00067065.html",
+    "name": "AI模特（虚拟换装）【最新版】 - 云市场",
+    "snippet": "无需真人模特实拍，只需要输入模特图和服装的平铺图，即可快速、低成本生成服装上身效果图，可广泛用于电商商家、运营团队、门店等场景。 电商/营销场景：快速完成模特换装效果 ...",
+    "host_name": "market.aliyun.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.cutout.pro/zh-CN/virtual-try-on",
+    "name": "Cutout.pro：聚合全球顶尖模型AI 虚拟试衣平台",
+    "snippet": "体验革命性的虚拟试衣技术：上传模特图，用Prompt生成无限穿搭；或上传服装图，一键实现真人模特高拟真换装 ... 当您通过提示词改变模特的姿势或环境光时，衣服上的褶皱 ...",
+    "host_name": "www.cutout.pro",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://mj.bandeyu.com/product/model",
+    "name": "AI模特试衣- 在线网页版【Midjourney中国】",
+    "snippet": "AI模特换装工具采用先进的AI图像识别与服装融合算法，能够自动识别模特轮廓和服装结构，精准完成AI模特换衣服与AI换衣操作。用户只需上传模特照片和服装图片，AI系统即可实现 ...",
+    "host_name": "mj.bandeyu.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://zhuanlan.zhihu.com/p/15175693062",
+    "name": "【closerAI ComfyUI】太惊艳了！AI模特电商服装穿搭小助手赋能电商",
+    "snippet": "工作流主要思路：首先通过精炼提示词，生成高质量的一张AI模特穿衣图，然后对每个姿势进行分割，然后分别接入三重控制模块生图，最后组合在一起，再通过TTP进行 ...",
+    "host_name": "zhuanlan.zhihu.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.douhuiai.com/ai-image/modelfitting",
+    "name": "模特试穿试戴- AI虚拟试衣与搭配预览 - 豆绘AI",
+    "snippet": "模特试穿试戴：将服饰智能贴合至模特或用户照片/模特图，支持尺码适配、款式替换与实时搭配预览，保留衣物细节与自然阴影，帮助电商提升购买转化并降低退货率。",
+    "host_name": "www.douhuiai.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.photta.app/zh/blog/ai",
+    "name": "AI换装技术革命：利用虚拟试衣重塑电商产品摄影 - Photta",
+    "snippet": "简单来说，AI换装技术利用生成式对抗网络（GANs）和计算机视觉技术，分析服装的结构、纹理和光影，然后将其逼真地合成到目标模特的身体上。",
+    "host_name": "www.photta.app",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.aidc-ai.com/manekenai",
+    "name": "ManekenAI—阿里巴巴国际自研的专业电商虚拟模特生成工具",
+    "snippet": "ManekenAI是阿里巴巴国际AI平台开发的电商场景图生成工具，提供虚拟模特生成、一键换衣制作等功能，支持API和在线使用， ... 通过多样化的模特，助力品牌升级. 低成本提高多市场 ...",
+    "host_name": "www.aidc-ai.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://developer.jdcloud.com/article/4324",
+    "name": "京点点AI试衣×主图A/B实验，时尚商家订单转化率提升80%+实战路径",
+    "snippet": "“京点点”AI试衣系统构建了涵盖多种人种、性别、身材及姿态的高质量虚拟模特库。 ... 简化AI试衣流程，引入任务调度、智能提示词及智能识别服饰类别 ...",
+    "host_name": "developer.jdcloud.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://fititon.app/zh/features/prompt-try-on",
+    "name": "提示词试穿| 基于文本描述的AI造型 - Fit It On",
+    "snippet": "使用我们基于提示词的AI造型工具释放您的创造力。只需描述您想要的造型——休闲夏装、正式商务套装或潮流街头服饰——然后看着我们的AI将您的照片转化为符合您愿景的效果。",
+    "host_name": "fititon.app",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

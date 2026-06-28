@@ -49,6 +49,7 @@ export function PromptFormDialog({ open, onOpenChange, editPrompt }: Props) {
   const [newCatName, setNewCatName] = React.useState('')
   const [newCatIcon, setNewCatIcon] = React.useState('Sparkles')
   const [newCatColor, setNewCatColor] = React.useState('violet')
+  const [newCatParent, setNewCatParent] = React.useState<string>('none')
 
   React.useEffect(() => {
     if (!open) return
@@ -77,6 +78,7 @@ export function PromptFormDialog({ open, onOpenChange, editPrompt }: Props) {
     setNewCatName('')
     setNewCatIcon('Sparkles')
     setNewCatColor('violet')
+    setNewCatParent('none')
   }, [open, editPrompt])
 
   const variables = React.useMemo(() => extractVariables(content), [content])
@@ -105,6 +107,7 @@ export function PromptFormDialog({ open, onOpenChange, editPrompt }: Props) {
           icon: newCatIcon,
           color: newCatColor,
           sortOrder: 50,
+          parentId: newCatParent === 'none' ? null : newCatParent,
         }),
       })
       if (!res.ok) {
@@ -116,6 +119,7 @@ export function PromptFormDialog({ open, onOpenChange, editPrompt }: Props) {
       setCategoryId(data.category.id)
       setShowNewCat(false)
       setNewCatName('')
+      setNewCatParent('none')
       toast({ title: '分类已创建', description: data.category.name })
     } catch (e) {
       toast({ title: '创建分类失败', description: (e as Error).message, variant: 'destructive' })
@@ -222,6 +226,16 @@ export function PromptFormDialog({ open, onOpenChange, editPrompt }: Props) {
                       </span>
                     </SelectItem>
                   ))}
+                  {categories.map((c) =>
+                    c.children?.map((sub) => (
+                      <SelectItem key={sub.id} value={sub.id}>
+                        <span className="inline-flex items-center gap-2">
+                          <CategoryIcon name={sub.icon} className="h-3.5 w-3.5" />
+                          <span className="text-muted-foreground">{c.name} /</span> {sub.name}
+                        </span>
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             ) : (
@@ -231,6 +245,25 @@ export function PromptFormDialog({ open, onOpenChange, editPrompt }: Props) {
                   value={newCatName}
                   onChange={(e) => setNewCatName(e.target.value)}
                 />
+                <div className="space-y-1">
+                  <Label className="text-xs">父级分类（留空则作为顶级分类）</Label>
+                  <Select value={newCatParent} onValueChange={setNewCatParent}>
+                    <SelectTrigger className="h-9">
+                      <SelectValue placeholder="无（顶级分类）" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">无（顶级分类）</SelectItem>
+                      {categories.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          <span className="inline-flex items-center gap-2">
+                            <CategoryIcon name={c.icon} className="h-3.5 w-3.5" />
+                            {c.name}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <Label className="text-xs">图标</Label>

@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://zhuanlan.zhihu.com/p/15175693062",
+    "name": "【closerAI ComfyUI】太惊艳了！AI模特电商服装穿搭小助手赋能电商",
+    "snippet": "1、自动提示词，加载场景图、服装参考图进行提示词反推，然后进行提示词组合。 ... 以上是closerAI团队制作的stable diffusion comfyUI closerAI开发的 ...",
+    "host_name": "zhuanlan.zhihu.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://gemini3prompt.com/zh/articles/ai-fashion-photography",
+    "name": "AI时尚摄影提示词完全指南 - Gemini3 Prompt",
+    "snippet": "掌握AI时尚摄影的专业提示词。学习造型、姿势、灯光技术和编辑美学，创建令人惊艳的时尚图像。 时尚摄影是艺术与商业的结合，创造激发灵感和促进销售的 ...",
+    "host_name": "gemini3prompt.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.weshop.com/blog/post-10080",
+    "name": "AI商拍实践｜冬季限定！羽绒服拍摄的绝佳场景全解锁！ - WeShop唯象",
+    "snippet": "无论是在室内温暖的环境，还是户外经典的街景，浅色羽绒服都能轻松搭配深色打底裤，营造出简约大气的冬日风格。 P1: 宽松的羽绒服搭配灰色调连衣裙与打底裤； ...",
+    "host_name": "www.weshop.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.psai.cn/article/news/content/6566d1c1fe7ee13b627d6f5f",
+    "name": "虹软PhotoStudio® AI上线“衣服图”功能：平铺图一键生成AI模特商拍",
+    "snippet": "虹软PhotoStudio® AI智能商拍摄影云工作室上线“衣服图”功能，支持平铺图、挂拍图、人台图一键生成AI模特商拍大片。无需真人模特与复杂拍摄流程，即可批量生成高品质服装 ...",
+    "host_name": "www.psai.cn",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://designer.dfuiux.com/stable-diffusion-ai%E5%87%BA%E5%9B%BE%E5%B8%B8%E7%94%A8%E6%8F%90%E7%A4%BA%E8%AF%8D%E5%90%88%E9%9B%86.html",
+    "name": "Stable diffusion AI出图常用提示词合集 - 戴维蔚来设计工作室",
+    "snippet": "Stable diffusion AI出图常用提示词合集 · 白色衬衫(white shirt, crisp white shirt) · 休闲装扮(casual attire, casual fashion, casual style) · 白色运动鞋(white ...",
+    "host_name": "designer.dfuiux.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.uied.cn/38594.html",
+    "name": "Stable Diffusion | 制服的诱惑之看图学提示词- UIED学习社区",
+    "snippet": "昨天学好了一部分，今天又来了. 模型：墨幽人造人.safetensors（模型链接在文末）. 懒人专用代码（只需要替换正向词中服装关键词，负向词中embedding文件需要自行下载）.",
+    "host_name": "www.uied.cn",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://caovan.com/stable-diffusion-jiaoseyifuprompttuwenduizhao/.html",
+    "name": "[图文对照]stable diffusion人物服装提示词大全 - 草凡博客",
+    "snippet": "[图文对照]stable diffusion人物服装提示词大全 · 采样：DDIM · 步数：50 · 高分辨率修复：开启 · 放大算法：8x_NMKD-Superscale_150000_G · 重绘幅度：0.2 · 分辨率： ...",
+    "host_name": "caovan.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://blog.csdn.net/weixin_43360707/article/details/132638751",
+    "name": "stable diffusion实践操作-提示词-人物服饰原创 - CSDN博客",
+    "snippet": "stable diffusion 人物高级提示词（二）衣物、身材. 材质类的prompt 比较 ... 提示词可以根据不同的场景和需求进行灵活的选择和组合，以达到理想 ...",
+    "host_name": "blog.csdn.net",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.bilibili.com/video/BV1rp4y137uA",
+    "name": "[图文对照]stable diffusion人物服装提示词大全",
+    "snippet": "[图文对照]stable diffusion人物服装提示词大全. 玩科技的舒. 相关 ... Banana-服装类精修提示词. AI生成服装带货视频（附详细教程）. 3.3万 1. 01 ...",
+    "host_name": "www.bilibili.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.wearview.co/zh/catalog/coats",
+    "name": "大衣摄影AI模特| 虚拟时尚试穿 - WearView",
+    "snippet": "使用AI生成的模特转换您的大衣产品照片。在多样化的虚拟模特上展示冬装大衣、风衣和外套，打造专业的电商图像。",
+    "host_name": "www.wearview.co",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

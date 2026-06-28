@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import {
-  Copy, Pencil, Trash2, Star, Pin, Check, Wand2, Clock, User, Hash,
+  Copy, Pencil, Trash2, Star, Pin, Check, Wand2, Clock, User, Hash, Share2,
 } from 'lucide-react'
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -29,9 +29,10 @@ type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
   onEdit: (p: Prompt) => void
+  onShare: (p: Prompt) => void
 }
 
-export function PromptDetailSheet({ open, onOpenChange, onEdit }: Props) {
+export function PromptDetailSheet({ open, onOpenChange, onEdit, onShare }: Props) {
   const prompt = usePromptStore((s) => s.selectedPrompt)
   const toggleFavorite = usePromptStore((s) => s.toggleFavorite)
   const togglePin = usePromptStore((s) => s.togglePin)
@@ -164,6 +165,15 @@ export function PromptDetailSheet({ open, onOpenChange, onEdit }: Props) {
             >
               <Pin className={`h-3.5 w-3.5 ${prompt.isPinned ? 'fill-amber-500 text-amber-500' : ''}`} />
               {prompt.isPinned ? '已置顶' : '置顶'}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onShare(prompt)}
+              className="gap-1.5"
+            >
+              <Share2 className="h-3.5 w-3.5" />
+              分享
             </Button>
             <div className="ml-auto flex items-center gap-1">
               <Button

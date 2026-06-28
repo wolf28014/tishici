@@ -16,11 +16,11 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url)
     const q = searchParams.get('q')?.trim() || ''
     const categoryId = searchParams.get('categoryId') || ''
+    const tag = searchParams.get('tag')?.trim() || ''
     const favorite = searchParams.get('favorite') === 'true'
-    const sort = searchParams.get('sort') || 'pinned' // pinned | recent | usage | favorite
+    const sort = searchParams.get('sort') || 'pinned'
 
     const where: Record<string, unknown> = {}
-    if (categoryId) where.categoryId = categoryId
     if (favorite) where.isFavorite = true
     if (q) {
       where.OR = [
@@ -29,6 +29,26 @@ export async function GET(req: NextRequest) {
         { content: { contains: q } },
         { tags: { contains: q } },
       ]
+    }
+    if (tag) {
+      // tags is JSON-encoded array, do a contains search on the string
+      where.tags = { contains: tag }
+    }
+    if (categoryId) {
+      // include subcategories: find category and its descendants
+      const cats = await db.category.findMany()
+      const ids = new Set<string>([categoryId])
+      let added = true
+      while (added) {
+        added = false
+        for (const c of cats) {
+          if (c.parentId && ids.has(c.parentId) && !ids.has(c.id)) {
+            ids.add(c.id)
+            added = true
+          }
+        }
+      }
+      where.categoryId = { in: Array.from(ids) }
     }
 
     let orderBy: Record<string, 'asc' | 'desc'>[] = [{ createdAt: 'desc' }]
@@ -40,10 +60,10 @@ export async function GET(req: NextRequest) {
     const prompts = await db.prompt.findMany({
       where,
       orderBy,
-      include: { category: true },
+      include: { category: { include: { parent: true } } },
     })
 
-    const result = prompts.map(p => ({
+    const result = prompts.map((p) => ({
       ...p,
       tags: parseTags(p.tags),
     }))
@@ -76,7 +96,7 @@ export async function POST(req: NextRequest) {
         isFavorite: Boolean(isFavorite),
         author: author?.trim() || '匿名',
       },
-      include: { category: true },
+      include: { category: { include: { parent: true } } },
     })
 
     return NextResponse.json({ prompt: { ...prompt, tags: parseTags(prompt.tags) } })

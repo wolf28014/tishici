@@ -7,7 +7,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
-  Star, Pin, Copy, Check, Hash, MoreVertical, Pencil, Trash2,
+  Star, Pin, Copy, Check, Hash, MoreVertical, Pencil, Trash2, Share2,
 } from 'lucide-react'
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -23,9 +23,10 @@ import { useToast } from '@/hooks/use-toast'
 type Props = {
   prompt: Prompt
   onEdit: (p: Prompt) => void
+  onShare: (p: Prompt) => void
 }
 
-export function PromptCard({ prompt, onEdit }: Props) {
+export function PromptCard({ prompt, onEdit, onShare }: Props) {
   const { selectPrompt, toggleFavorite, togglePin, deletePrompt, incrementUsage } = usePromptStore()
   const { toast } = useToast()
   const [copied, setCopied] = React.useState(false)
@@ -56,6 +57,11 @@ export function PromptCard({ prompt, onEdit }: Props) {
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation()
     onEdit(prompt)
+  }
+
+  const handleShare = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onShare(prompt)
   }
 
   const handleDelete = async (e: React.MouseEvent) => {
@@ -117,6 +123,10 @@ export function PromptCard({ prompt, onEdit }: Props) {
                 <DropdownMenuItem onClick={handleFavorite}>
                   <Star className="h-3.5 w-3.5 mr-2" />
                   {prompt.isFavorite ? '取消收藏' : '收藏'}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleShare}>
+                  <Share2 className="h-3.5 w-3.5 mr-2" />
+                  分享
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleDelete} className="text-destructive focus:text-destructive">

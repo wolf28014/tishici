@@ -5,12 +5,15 @@ export type Category = {
   icon: string | null
   color: string | null
   sortOrder: number
+  parentId: string | null
+  parent?: Category | null
   createdAt: string
   updatedAt: string
 }
 
 export type CategoryWithCount = Category & {
   _count: { prompts: number }
+  children?: CategoryWithCount[]
 }
 
 export type Prompt = {
@@ -19,7 +22,7 @@ export type Prompt = {
   content: string
   description: string | null
   categoryId: string | null
-  category: Category | null
+  category: (Category & { parent?: Category | null }) | null
   tags: string[]
   isFavorite: boolean
   isPinned: boolean
@@ -41,7 +44,12 @@ export type PromptInput = {
   author?: string
 }
 
-// Color mapping: category color -> tailwind classes for badges / icons
+export type TagWithCount = {
+  name: string
+  count: number
+}
+
+// Color mapping: category color -> tailwind classes
 export const COLOR_CLASSES: Record<
   string,
   { bg: string; text: string; border: string; ring: string; dot: string; soft: string }
@@ -159,5 +167,37 @@ export async function copyToClipboard(text: string): Promise<boolean> {
     return ok
   } catch {
     return false
+  }
+}
+
+// Encode/decode prompt data to URL-safe base64 (for share links)
+export function encodePromptToShare(prompt: {
+  title: string
+  content: string
+  description?: string | null
+  tags?: string[]
+  author?: string | null
+}): string {
+  const json = JSON.stringify(prompt)
+  // Use URL-safe base64
+  const b64 = btoa(unescape(encodeURIComponent(json)))
+  return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
+export function decodePromptFromShare(encoded: string): {
+  title: string
+  content: string
+  description?: string | null
+  tags?: string[]
+  author?: string | null
+} | null {
+  try {
+    // Restore base64
+    let b64 = encoded.replace(/-/g, '+').replace(/_/g, '/')
+    while (b64.length % 4) b64 += '='
+    const json = decodeURIComponent(escape(atob(b64)))
+    return JSON.parse(json)
+  } catch {
+    return null
   }
 }

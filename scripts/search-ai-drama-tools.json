@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://developer.aliyun.com/article/1735916",
+    "name": "AI 生成短剧软件系统完整开发落地步骤（从零到上线）",
+    "snippet": "简介： 本方案提供短剧AI生成系统最简商用版架构：用户输入剧情→AI写剧本→自动分镜→文生图/图生视频→AI配音字幕→智能剪辑→导出发布。",
+    "host_name": "developer.aliyun.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://zhuanlan.zhihu.com/p/2041196276402869502",
+    "name": "AI短剧工具有哪些：从剧本到成片分步盘点",
+    "snippet": "如果镜头质量是第一优先级的、流程不复杂，用可灵AI或Runway生成高质量镜头，然后在剪映里做剪辑、配音、字幕，这是完全可行的路线。坏处是角色和场景素材 ...\n如果你习惯自己拆剧本（比如在文档里写完分镜表再开始做），那也可以不依赖工具内置的剧本组织功能，直接用可灵AI、即梦AI、海螺AI等工具从角色图生成这一步 ...",
+    "host_name": "zhuanlan.zhihu.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://alidocs.dingtalk.com/i/p/4oJRz0rNKW4dmLZMYxXAN6An1AAbDmNy",
+    "name": "绘梦工坊AI影视创作平台-保姆级创作指南 - 钉钉文档",
+    "snippet": "点击图片管理「文生图」功能，即可进行角色图片资产生成。 ... 需要生成的分镜：为当前页面选中项生成图片、为当前页面所有分镜生成图片、为当前页面缺图分镜生成图片。",
+    "host_name": "alidocs.dingtalk.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://typemovie.art",
+    "name": "讯飞绘镜- 短视频轻松生成",
+    "snippet": "讯飞绘镜是科大讯飞推出的一个AI短视频创作平台，可以帮助用户将创意灵感转化为视频内容。用户只需输入创意文本描述,讯飞绘镜便能自动生成脚本和分镜画面,并将其转化为动态 ...",
+    "host_name": "typemovie.art",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://v.lmtw.com/mzs/content/detail/id/239976",
+    "name": "AI短剧制作全揭秘:从脚本生成到视频剪辑,免费工具清单大公开!",
+    "snippet": "1、写剧本：. 首先明确短剧类型，例如：科幻、爱情、悬疑、纪录片、 先确定一个大致方向；是采用动画风格，还是追求逼真的实景效果？ 剧情六要素完善：时间、地点 ...",
+    "host_name": "v.lmtw.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.sina.cn/news/detail/5309741531398753.html",
+    "name": "短剧剧本、拆分成分镜脚本、写提示词2. 画面生成：即梦AI/可  - 新浪",
+    "snippet": "1. 打开即梦AI→图生视频，上传锁定好的男女主参考图 · 2. 粘贴单条分镜画面描述，设置：时长5-10s、帧率24、电影光影、开启口型同步 · 3. 依次生成所有镜头片段 ...",
+    "host_name": "www.sina.cn",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.bilibili.com/video/BV18HqhBFEqN",
+    "name": "【AI漫剧】制作全流程！剧本+分镜+静帧+视频+配音+剪辑",
+    "snippet": "... 即梦AI玩转AI短剧赛道. AI短剧制作教程. 01-AI制作漫剧拆解; 02-根据剧本脚本生成分镜头图片; 03-AI视频生成功能; 04-AI生成人物配音; 05-AI生成音效（改） ...",
+    "host_name": "www.bilibili.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.bilibili.com/video/BV1m1uRzkEpV",
+    "name": "从零开始学AI视频制作、剪辑、配音、特效、短剧",
+    "snippet": "【全348集】即梦教程+可灵教程+Runway教程+Vidu教程，从零开始学AI视频制作、剪辑、配音、特效、短剧、动画，全程干货！七天就能从小白到大神（附工具）. B站AI绘画教学.",
+    "host_name": "www.bilibili.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://aixzd.com/category/video",
+    "name": "AI视频工具- AI工具导航- 垂直领域分类 - AI星踪岛",
+    "snippet": "打字三分钟搞定短漫剧. 传统短剧制作总是让人焦头烂额，而灵绘AI直接把整个剧组装进了云端。只需甩入一段文字，灵绘AI便能全自动搞定分镜解析、角色设定以及配音合成。",
+    "host_name": "aixzd.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://cloud.tencent.com/developer/article/2586530",
+    "name": "AI视频制作全攻略：从分镜到生成，一站式解决方案 - 腾讯云",
+    "snippet": "\"AI视频制作全流程指南：从分镜生成到专业剪辑，详解DeepSeek、即梦等工具使用技巧。包含分镜提示词模板、风格统一方法及实战案例，助你快速制作企业宣传 ...",
+    "host_name": "cloud.tencent.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

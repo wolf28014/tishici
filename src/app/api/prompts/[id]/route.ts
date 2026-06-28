@@ -18,7 +18,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
     const { id } = await params
     const prompt = await db.prompt.findUnique({
       where: { id },
-      include: { category: true },
+      include: { category: { include: { parent: true } } },
     })
     if (!prompt) return NextResponse.json({ error: '未找到提示词' }, { status: 404 })
     return NextResponse.json({ prompt: { ...prompt, tags: parseTags(prompt.tags) } })
@@ -50,7 +50,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
         isFavorite: isFavorite !== undefined ? Boolean(isFavorite) : existing.isFavorite,
         author: author !== undefined ? (author?.trim() || '匿名') : existing.author,
       },
-      include: { category: true },
+      include: { category: { include: { parent: true } } },
     })
 
     return NextResponse.json({ prompt: { ...prompt, tags: parseTags(prompt.tags) } })
@@ -75,7 +75,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   }
 }
 
-// PATCH /api/prompts/[id] - for quick updates like toggle favorite/pin or increment usage
+// PATCH /api/prompts/[id]
 export async function PATCH(req: NextRequest, { params }: Params) {
   try {
     const { id } = await params
@@ -94,7 +94,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     const prompt = await db.prompt.update({
       where: { id },
       data,
-      include: { category: true },
+      include: { category: { include: { parent: true } } },
     })
     return NextResponse.json({ prompt: { ...prompt, tags: parseTags(prompt.tags) } })
   } catch (err) {

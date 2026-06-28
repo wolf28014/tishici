@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.bilibili.com/video/BV1994y1W7Tg",
+    "name": "靠AI开一家服装店？超详细AI衣服款式设计+“AI模特”换装教程",
+    "snippet": "靠AI开一家服装店？超详细AI衣服款式设计+“AI模特”换装教程| Stable Diffusion商业落地实践&男女装电商应用，一秒生成“摄影级”产品图. Nenly同学. 相关 ...",
+    "host_name": "www.bilibili.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://zhuanlan.zhihu.com/p/15175693062",
+    "name": "【closerAI ComfyUI】太惊艳了！AI模特电商服装穿搭小助手赋能电商",
+    "snippet": "先看效果：以下是生成的AI模特服装秀，同一场景4个姿势。模特人脸一致性，衣物一致性，场景一致性。但我们需要把它换成多套衣服展示。",
+    "host_name": "zhuanlan.zhihu.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.cutout.pro/zh-CN/virtual-try-on",
+    "name": "Cutout.pro：聚合全球顶尖模型AI 虚拟试衣平台",
+    "snippet": "Cutout.pro 全新升级一站式体验平台！体验革命性的虚拟试衣技术：上传模特图，用Prompt生成无限穿搭；或上传服装图，一键实现真人模特高拟真换装。降本增效，重塑电商摄影工作流",
+    "host_name": "www.cutout.pro",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.bilibili.com/opus/1205846569872523269",
+    "name": "AI变装提示词教程：换装、证件照、写真大片怎么一键生成？",
+    "snippet": "适合：服饰试穿、穿搭展示、换衣效果图、电商上身图。 提示词：. 将输入图像中人物的服装替换为参考图像中显示的目标服装。",
+    "host_name": "www.bilibili.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://blog.csdn.net/qq_41176800/article/details/149163071",
+    "name": "AI 图像编辑提示词参考之：人像换装原创 - CSDN博客",
+    "snippet": "你可以为人物更换四季服装、调整颜色、增添帽饰、鞋袜、包袋及各类配饰，只需合理书写提示词，即可精确控制变换内容，并保持人物的外貌、姿势、光影和背景等 ...",
+    "host_name": "blog.csdn.net",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://caovan.com/stable-diffusion-jiaoseyifuprompttuwenduizhao/.html",
+    "name": "[图文对照]stable diffusion人物服装提示词大全 - 草凡博客",
+    "snippet": "案例中用到的模型：墨幽人造人_v1010完整.safetensors. 正面提示词：1girl, moyou, clothes_prompt , full body, standing, Pure white background, ...",
+    "host_name": "caovan.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.piccopilot.com/zh/blog/ai-fashion-reels-launch-prep-zh",
+    "name": "换季上新怎么做视频图？AI 模特换装让你三天做完三十条内容",
+    "snippet": "AI 模特换肤是Pic Copilot 推出的视觉内容生成工具。你只需要上传服装平铺图或款式图，系统就会将其自动“穿”在多种模特身上，实现风格还原 ...",
+    "host_name": "www.piccopilot.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.aliyun.com/exp/goods-img",
+    "name": "在线AI商品图换装：一键模特试穿商品服装-AI体验馆-阿里云",
+    "snippet": "体验阿里云AI模特在线试衣，上传服装图与模特画像即可快速生成多种族、多风格的真人试穿海报，极大节省拍摄与模特成本，立即免费在线体验。",
+    "host_name": "www.aliyun.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://d.design/toolbox/clothes",
+    "name": "堆友AI模特换肤—素人图",
+    "snippet": "拍摄要求: 支持模特、全身人台实拍图; 不支持挂拍、平铺、无肢体人台图. 上传图片示例: 请传入图片数据…… 选择模特. （VIP模版开放体验）. 查看更多.",
+    "host_name": "d.design",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.aiyjs.com/35675.html",
+    "name": "靠AI开一家服装店？超详细AI衣服款式设计+“AI模特”换装教程 - AI研究所",
+    "snippet": "🛍️ AI可以设计衣服的图案和款式，为淘宝店铺提供爆款新品。 · 使用稳定AI应用，解决了原先昂贵的拍摄后期工作。 · AI模特可以穿上您设计的衣服，几乎零成本 ...",
+    "host_name": "www.aiyjs.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]
