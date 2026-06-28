@@ -52,6 +52,13 @@ export default function Home() {
   const [formOpen, setFormOpen] = React.useState(false)
   const [detailOpen, setDetailOpen] = React.useState(false)
   const [editing, setEditing] = React.useState<Prompt | null>(null)
+  const [prefillData, setPrefillData] = React.useState<{
+    title: string
+    content: string
+    description: string
+    tags: string[]
+    author: string
+  } | null>(null)
   const [importExportOpen, setImportExportOpen] = React.useState(false)
   const [shareOpen, setShareOpen] = React.useState(false)
   const [sharingPrompt, setSharingPrompt] = React.useState<Prompt | null>(null)
@@ -110,11 +117,13 @@ export default function Home() {
 
   const handleEdit = (p: Prompt) => {
     setEditing(p)
+    setPrefillData(null)
     setFormOpen(true)
   }
 
   const handleNew = () => {
     setEditing(null)
+    setPrefillData(null)
     setFormOpen(true)
   }
 
@@ -125,28 +134,15 @@ export default function Home() {
     tags: string[]
     suggestedCategory: string
   }) => {
-    // Open the form with the generated data pre-filled
-    setEditing({
-      id: '',
+    // 走"新建"路径，但预填生成的数据
+    setEditing(null)
+    setPrefillData({
       title: generated.title,
       content: generated.content,
       description: generated.description,
-      categoryId: null,
-      category: null,
       tags: generated.tags,
-      background: null,
-      isFavorite: false,
-      isPinned: false,
-      usageCount: 0,
-      rating: 0,
       author: 'AI 生成',
-      source: 'ai-generate',
-      sortOrder: 0,
-      collectionId: null,
-      collection: null,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    } as Prompt)
+    })
     setFormOpen(true)
     toast({ title: 'AI 生成的内容已填入表单', description: '可继续编辑后保存' })
   }
@@ -544,6 +540,7 @@ export default function Home() {
         open={formOpen}
         onOpenChange={setFormOpen}
         editPrompt={editing}
+        prefillData={prefillData}
       />
       <PromptDetailSheet
         open={detailOpen}

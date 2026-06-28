@@ -2,6 +2,8 @@
 
 ## 📋 脚本说明
 
+### Linux / macOS（.sh）
+
 | 脚本 | 功能 | 命令 |
 |------|------|------|
 | `start.sh` | 启动 PromptHub（后台运行） | `bash scripts/start.sh` |
@@ -10,7 +12,17 @@
 | `status.sh` | 查看运行状态 | `bash scripts/status.sh` |
 | `install-service.sh` | 安装开机自启（需 sudo） | `sudo bash scripts/install-service.sh` |
 | `uninstall-service.sh` | 卸载开机自启（需 sudo） | `sudo bash scripts/uninstall-service.sh` |
-| `prompthub.service` | systemd 服务文件（供参考） | - |
+
+### Windows（.bat）
+
+| 脚本 | 功能 | 命令 |
+|------|------|------|
+| `start.bat` | 启动 PromptHub（后台运行） | 双击运行 或 `scripts\start.bat` |
+| `stop.bat` | 停止 PromptHub | 双击运行 或 `scripts\stop.bat` |
+| `restart.bat` | 重启 PromptHub | 双击运行 或 `scripts\restart.bat` |
+| `status.bat` | 查看运行状态 | 双击运行 或 `scripts\status.bat` |
+| `install-service.bat` | 安装开机自启 | 双击运行（建议管理员身份） |
+| `uninstall-service.bat` | 卸载开机自启 | 双击运行 |
 
 ---
 

@@ -27,12 +27,19 @@ type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
   editPrompt?: Prompt | null
+  prefillData?: {
+    title: string
+    content: string
+    description: string
+    tags: string[]
+    author: string
+  } | null
 }
 
 const COLOR_OPTIONS = ['rose', 'emerald', 'amber', 'sky', 'violet', 'teal', 'pink', 'slate']
 
-export function PromptFormDialog({ open, onOpenChange, editPrompt }: Props) {
-  const isEdit = !!editPrompt
+export function PromptFormDialog({ open, onOpenChange, editPrompt, prefillData }: Props) {
+  const isEdit = !!editPrompt && !!editPrompt.id
   const { categories, collections, createPrompt, updatePrompt, tags: allTags } = usePromptStore()
   const { toast } = useToast()
 
@@ -78,7 +85,8 @@ export function PromptFormDialog({ open, onOpenChange, editPrompt }: Props) {
 
   React.useEffect(() => {
     if (!open) return
-    if (editPrompt) {
+    if (editPrompt && editPrompt.id) {
+      // 编辑模式
       setTitle(editPrompt.title)
       setContent(editPrompt.content)
       setDescription(editPrompt.description || '')
@@ -90,7 +98,21 @@ export function PromptFormDialog({ open, onOpenChange, editPrompt }: Props) {
       setAuthor(editPrompt.author || '匿名')
       setIsPinned(editPrompt.isPinned)
       setIsFavorite(editPrompt.isFavorite)
+    } else if (prefillData) {
+      // AI 生成预填模式（新建路径）
+      setTitle(prefillData.title)
+      setContent(prefillData.content)
+      setDescription(prefillData.description || '')
+      setCategoryId('none')
+      setCollectionId('none')
+      setTags(prefillData.tags || [])
+      setTagsInput('')
+      setBackground(null)
+      setAuthor(prefillData.author || '匿名')
+      setIsPinned(false)
+      setIsFavorite(false)
     } else {
+      // 新建空白模式
       setTitle('')
       setContent('')
       setDescription('')
@@ -108,7 +130,7 @@ export function PromptFormDialog({ open, onOpenChange, editPrompt }: Props) {
     setNewCatIcon('Sparkles')
     setNewCatColor('violet')
     setNewCatParent('none')
-  }, [open, editPrompt])
+  }, [open, editPrompt, prefillData])
 
   const variables = React.useMemo(() => extractVariables(content), [content])
 
