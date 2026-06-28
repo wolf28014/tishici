@@ -16,15 +16,18 @@ import { Skeleton } from '@/components/ui/skeleton'
 import {
   Sparkles, Search, Plus, Pin, Clock, TrendingUp, Library, Star,
   Download, Tag as TagIcon, ShoppingBag, Snowflake, Clapperboard, Share2,
+  CheckSquare, X, FolderOpen,
   type LucideIcon,
 } from 'lucide-react'
 import { Sidebar } from '@/components/sidebar'
 import { MobileFilter } from '@/components/mobile-filter'
-import { PromptCard } from '@/components/prompt-card'
+import { DraggablePromptGrid } from '@/components/draggable-prompt-grid'
 import { PromptFormDialog } from '@/components/prompt-form-dialog'
 import { PromptDetailSheet } from '@/components/prompt-detail-sheet'
 import { ImportExportDialog } from '@/components/import-export-dialog'
 import { ShareDialog } from '@/components/share-dialog'
+import { BatchEditDialog } from '@/components/batch-edit-dialog'
+import { CollectionManagerDialog } from '@/components/collection-manager-dialog'
 import { ThemeToggle } from '@/components/theme-toggle'
 import type { Prompt } from '@/lib/prompt-types'
 import { decodePromptFromShare } from '@/lib/prompt-types'
@@ -32,9 +35,10 @@ import { cn } from '@/lib/utils'
 
 export default function Home() {
   const {
-    prompts, loading, fetchPrompts, fetchCategories, fetchTags, selectPrompt,
+    prompts, loading, fetchPrompts, fetchCategories, fetchTags, fetchCollections, selectPrompt,
     searchQuery, setSearchQuery, sortBy, setSortBy,
-    showFavoritesOnly, activeCategoryId, activeTag, categories, tags,
+    showFavoritesOnly, activeCategoryId, activeCollectionId, activeTag, categories,
+    selectionMode, setSelectionMode, selectedIds, selectAll, clearSelection,
   } = usePromptStore()
   const { toast } = useToast()
 
@@ -44,6 +48,8 @@ export default function Home() {
   const [importExportOpen, setImportExportOpen] = React.useState(false)
   const [shareOpen, setShareOpen] = React.useState(false)
   const [sharingPrompt, setSharingPrompt] = React.useState<Prompt | null>(null)
+  const [batchOpen, setBatchOpen] = React.useState(false)
+  const [collectionOpen, setCollectionOpen] = React.useState(false)
   const [shareImportData, setShareImportData] = React.useState<{
     title: string
     content: string
@@ -56,8 +62,9 @@ export default function Home() {
   React.useEffect(() => {
     fetchCategories()
     fetchTags()
+    fetchCollections()
     fetchPrompts()
-  }, [fetchCategories, fetchPrompts, fetchTags])
+  }, [fetchCategories, fetchPrompts, fetchTags, fetchCollections])
 
   // Handle share link on page load
   React.useEffect(() => {
@@ -80,7 +87,7 @@ export default function Home() {
   React.useEffect(() => {
     const t = setTimeout(() => fetchPrompts(), 200)
     return () => clearTimeout(t)
-  }, [searchQuery, sortBy, showFavoritesOnly, activeCategoryId, activeTag, fetchPrompts])
+  }, [searchQuery, sortBy, showFavoritesOnly, activeCategoryId, activeCollectionId, activeTag, fetchPrompts])
 
   // open detail when selectedPrompt changes
   const selectedPrompt = usePromptStore((s) => s.selectedPrompt)
@@ -142,12 +149,16 @@ export default function Home() {
     ].filter((x) => x.cat)
   }, [categories])
 
-  const hasFilters = !!searchQuery || showFavoritesOnly || activeCategoryId || activeTag
+  const hasFilters = !!searchQuery || showFavoritesOnly || activeCategoryId || activeTag || activeCollectionId
 
   // Determine current view title
   const currentTitle = React.useMemo(() => {
     if (activeTag) return `#${activeTag}`
     if (showFavoritesOnly) return '我的收藏'
+    if (activeCollectionId) {
+      const col = usePromptStore.getState().collections.find((c) => c.id === activeCollectionId)
+      return col ? `📁 ${col.name}` : '收藏夹'
+    }
     if (activeCategoryId) {
       for (const c of categories) {
         if (c.id === activeCategoryId) return c.name
@@ -158,7 +169,9 @@ export default function Home() {
       }
     }
     return '全部提示词'
-  }, [activeTag, showFavoritesOnly, activeCategoryId, categories])
+  }, [activeTag, showFavoritesOnly, activeCategoryId, activeCollectionId, categories])
+
+  const selectedIdsArray = Array.from(selectedIds)
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -190,6 +203,24 @@ export default function Home() {
 
           <div className="flex items-center gap-1 flex-shrink-0">
             <Button
+              variant={selectionMode ? 'default' : 'ghost'}
+              size="icon"
+              onClick={() => setSelectionMode(!selectionMode)}
+              title={selectionMode ? '退出批量选择' : '批量选择'}
+              className="h-9 w-9"
+            >
+              <CheckSquare className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setCollectionOpen(true)}
+              title="收藏夹管理"
+              className="h-9 w-9"
+            >
+              <FolderOpen className="h-4 w-4" />
+            </Button>
+            <Button
               variant="ghost"
               size="icon"
               onClick={() => setImportExportOpen(true)}
@@ -209,8 +240,39 @@ export default function Home() {
         </div>
       </header>
 
+      {/* Batch action bar */}
+      {selectionMode && (
+        <div className="sticky top-14 z-20 border-b bg-violet-50 dark:bg-violet-950/30 px-4 py-2 flex items-center gap-2">
+          <span className="text-sm font-medium text-violet-700 dark:text-violet-300">
+            已选 {selectedIdsArray.length} 条
+          </span>
+          <div className="flex-1" />
+          <Button size="sm" variant="outline" onClick={selectAll} className="gap-1.5">
+            全选
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => setBatchOpen(true)}
+            disabled={selectedIdsArray.length === 0}
+            className="gap-1.5"
+          >
+            <TagIcon className="h-3.5 w-3.5" />
+            批量编辑
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setSelectionMode(false)}
+            className="gap-1.5"
+          >
+            <X className="h-3.5 w-3.5" />
+            退出
+          </Button>
+        </div>
+      )}
+
       <div className="flex flex-1">
-        <Sidebar onAddNew={handleNew} />
+        <Sidebar onAddNew={handleNew} onManageCollections={() => setCollectionOpen(true)} />
 
         <main className="flex-1 min-w-0">
           <div className="container max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
@@ -313,11 +375,7 @@ export default function Home() {
             ) : prompts.length === 0 ? (
               <EmptyState hasFilters={hasFilters} onAdd={handleNew} />
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
-                {prompts.map((p) => (
-                  <PromptCard key={p.id} prompt={p} onEdit={handleEdit} onShare={handleShare} />
-                ))}
-              </div>
+              <DraggablePromptGrid prompts={prompts} onEdit={handleEdit} onShare={handleShare} />
             )}
 
             {/* Footer */}
@@ -347,6 +405,15 @@ export default function Home() {
         open={shareOpen}
         onOpenChange={setShareOpen}
         prompt={sharingPrompt}
+      />
+      <BatchEditDialog
+        open={batchOpen}
+        onOpenChange={setBatchOpen}
+        selectedIds={selectedIdsArray}
+      />
+      <CollectionManagerDialog
+        open={collectionOpen}
+        onOpenChange={setCollectionOpen}
       />
 
       {/* Share link import dialog */}
@@ -395,7 +462,7 @@ function SortSelect({
   sortBy, setSortBy,
 }: {
   sortBy: string
-  setSortBy: (s: 'pinned' | 'recent' | 'usage' | 'favorite') => void
+  setSortBy: (s: 'pinned' | 'recent' | 'usage' | 'favorite' | 'custom') => void
 }) {
   return (
     <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
@@ -404,6 +471,7 @@ function SortSelect({
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="pinned">智能排序</SelectItem>
+        <SelectItem value="custom">自定义排序（可拖拽）</SelectItem>
         <SelectItem value="recent">最近添加</SelectItem>
         <SelectItem value="usage">使用最多</SelectItem>
         <SelectItem value="favorite">收藏优先</SelectItem>

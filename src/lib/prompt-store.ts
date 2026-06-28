@@ -1,14 +1,15 @@
 'use client'
 
 import { create } from 'zustand'
-import type { Prompt, CategoryWithCount, TagWithCount } from '@/lib/prompt-types'
+import type { Prompt, CategoryWithCount, TagWithCount, CollectionWithCount, Background } from '@/lib/prompt-types'
 
-type SortKey = 'pinned' | 'recent' | 'usage' | 'favorite'
+type SortKey = 'pinned' | 'recent' | 'usage' | 'favorite' | 'custom'
 
 type PromptStore = {
   // data
   prompts: Prompt[]
   categories: CategoryWithCount[]
+  collections: CollectionWithCount[]
   tags: TagWithCount[]
   loading: boolean
   error: string | null
@@ -16,6 +17,7 @@ type PromptStore = {
   // filters
   searchQuery: string
   activeCategoryId: string | null // null = all
+  activeCollectionId: string | null
   activeTag: string | null
   showFavoritesOnly: boolean
   sortBy: SortKey
@@ -27,15 +29,21 @@ type PromptStore = {
   selectedPromptId: string | null
   selectedPrompt: Prompt | null
 
+  // batch selection mode
+  selectionMode: boolean
+  selectedIds: Set<string>
+
   // setters
   setPrompts: (p: Prompt[]) => void
   setCategories: (c: CategoryWithCount[]) => void
+  setCollections: (c: CollectionWithCount[]) => void
   setTags: (t: TagWithCount[]) => void
   setLoading: (b: boolean) => void
   setError: (e: string | null) => void
 
   setSearchQuery: (q: string) => void
   setActiveCategoryId: (id: string | null) => void
+  setActiveCollectionId: (id: string | null) => void
   setActiveTag: (tag: string | null) => void
   setShowFavoritesOnly: (b: boolean) => void
   setSortBy: (s: SortKey) => void
@@ -43,9 +51,16 @@ type PromptStore = {
 
   selectPrompt: (p: Prompt | null) => void
 
+  // batch selection
+  setSelectionMode: (b: boolean) => void
+  toggleSelected: (id: string) => void
+  selectAll: () => void
+  clearSelection: () => void
+
   // CRUD helpers
   fetchPrompts: () => Promise<void>
   fetchCategories: () => Promise<void>
+  fetchCollections: () => Promise<void>
   fetchTags: () => Promise<void>
   createPrompt: (input: Partial<Prompt> & { title: string; content: string }) => Promise<boolean>
   updatePrompt: (id: string, input: Partial<Prompt>) => Promise<boolean>
@@ -53,6 +68,22 @@ type PromptStore = {
   toggleFavorite: (id: string) => Promise<void>
   togglePin: (id: string) => Promise<void>
   incrementUsage: (id: string) => Promise<void>
+
+  // reorder
+  reorderPrompts: (orderedIds: string[]) => Promise<void>
+
+  // batch operations
+  batchAddTags: (ids: string[], tags: string[]) => Promise<boolean>
+  batchRemoveTags: (ids: string[], tags: string[]) => Promise<boolean>
+  batchSetCollection: (ids: string[], collectionId: string | null) => Promise<boolean>
+  batchDelete: (ids: string[]) => Promise<boolean>
+
+  // collections
+  createCollection: (input: { name: string; description?: string; icon?: string; color?: string }) => Promise<boolean>
+  deleteCollection: (id: string) => Promise<boolean>
+
+  // AI background
+  recommendBackground: (title: string, content: string, description?: string) => Promise<{ background: Background | null; reason: string; imageKeyword: string; recommendType: string } | null>
 
   // import/export
   exportData: () => Promise<void>
@@ -62,12 +93,14 @@ type PromptStore = {
 export const usePromptStore = create<PromptStore>((set, get) => ({
   prompts: [],
   categories: [],
+  collections: [],
   tags: [],
   loading: false,
   error: null,
 
   searchQuery: '',
   activeCategoryId: null,
+  activeCollectionId: null,
   activeTag: null,
   showFavoritesOnly: false,
   sortBy: 'pinned',
@@ -77,15 +110,20 @@ export const usePromptStore = create<PromptStore>((set, get) => ({
   selectedPromptId: null,
   selectedPrompt: null,
 
+  selectionMode: false,
+  selectedIds: new Set<string>(),
+
   setPrompts: (p) => set({ prompts: p }),
   setCategories: (c) => set({ categories: c }),
+  setCollections: (c) => set({ collections: c }),
   setTags: (t) => set({ tags: t }),
   setLoading: (b) => set({ loading: b }),
   setError: (e) => set({ error: e }),
 
   setSearchQuery: (q) => set({ searchQuery: q }),
-  setActiveCategoryId: (id) => set({ activeCategoryId: id, activeTag: id ? null : get().activeTag }),
-  setActiveTag: (tag) => set({ activeTag: tag, activeCategoryId: tag ? null : get().activeCategoryId }),
+  setActiveCategoryId: (id) => set({ activeCategoryId: id, activeTag: id ? null : get().activeTag, activeCollectionId: id ? null : get().activeCollectionId }),
+  setActiveCollectionId: (id) => set({ activeCollectionId: id, activeCategoryId: id ? null : get().activeCategoryId, activeTag: id ? null : get().activeTag }),
+  setActiveTag: (tag) => set({ activeTag: tag, activeCategoryId: tag ? null : get().activeCategoryId, activeCollectionId: tag ? null : get().activeCollectionId }),
   setShowFavoritesOnly: (b) => set({ showFavoritesOnly: b }),
   setSortBy: (s) => set({ sortBy: s }),
   toggleCategoryExpanded: (id) => {
@@ -101,9 +139,10 @@ export const usePromptStore = create<PromptStore>((set, get) => ({
     set({ loading: true, error: null })
     try {
       const params = new URLSearchParams()
-      const { sortBy, activeCategoryId, showFavoritesOnly, searchQuery, activeTag } = get()
+      const { sortBy, activeCategoryId, activeCollectionId, showFavoritesOnly, searchQuery, activeTag } = get()
       params.set('sort', sortBy)
       if (activeCategoryId) params.set('categoryId', activeCategoryId)
+      if (activeCollectionId) params.set('collectionId', activeCollectionId)
       if (showFavoritesOnly) params.set('favorite', 'true')
       if (searchQuery.trim()) params.set('q', searchQuery.trim())
       if (activeTag) params.set('tag', activeTag)
@@ -136,6 +175,173 @@ export const usePromptStore = create<PromptStore>((set, get) => ({
       set({ tags: data.tags as TagWithCount[] })
     } catch (e) {
       console.error(e)
+    }
+  },
+
+  fetchCollections: async () => {
+    try {
+      const res = await fetch('/api/collections')
+      if (!res.ok) throw new Error('获取收藏夹失败')
+      const data = await res.json()
+      set({ collections: data.collections as CollectionWithCount[] })
+    } catch (e) {
+      console.error(e)
+    }
+  },
+
+  // Batch selection
+  setSelectionMode: (b) => set({ selectionMode: b, selectedIds: b ? get().selectedIds : new Set() }),
+  toggleSelected: (id) => {
+    const cur = new Set(get().selectedIds)
+    if (cur.has(id)) cur.delete(id)
+    else cur.add(id)
+    set({ selectedIds: cur })
+  },
+  selectAll: () => set({ selectedIds: new Set(get().prompts.map((p) => p.id)) }),
+  clearSelection: () => set({ selectedIds: new Set() }),
+
+  // Reorder
+  reorderPrompts: async (orderedIds) => {
+    // Optimistic update
+    const prevPrompts = get().prompts
+    const map = new Map(prevPrompts.map((p) => [p.id, p]))
+    const reordered = orderedIds.map((id, idx) => {
+      const p = map.get(id)
+      return p ? { ...p, sortOrder: idx } : null
+    }).filter(Boolean) as Prompt[]
+    set({ prompts: reordered })
+
+    try {
+      const items = orderedIds.map((id, idx) => ({ id, sortOrder: idx }))
+      const res = await fetch('/api/prompts/reorder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items }),
+      })
+      if (!res.ok) throw new Error('排序失败')
+    } catch (e) {
+      set({ prompts: prevPrompts, error: (e as Error).message })
+    }
+  },
+
+  // Batch operations
+  batchAddTags: async (ids, tags) => {
+    try {
+      const res = await fetch('/api/prompts/batch-tags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids, action: 'addTags', tags }),
+      })
+      if (!res.ok) throw new Error('批量添加标签失败')
+      await Promise.all([get().fetchTags(), get().fetchPrompts()])
+      return true
+    } catch (e) {
+      set({ error: (e as Error).message })
+      return false
+    }
+  },
+
+  batchRemoveTags: async (ids, tags) => {
+    try {
+      const res = await fetch('/api/prompts/batch-tags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids, action: 'removeTags', tags }),
+      })
+      if (!res.ok) throw new Error('批量移除标签失败')
+      await Promise.all([get().fetchTags(), get().fetchPrompts()])
+      return true
+    } catch (e) {
+      set({ error: (e as Error).message })
+      return false
+    }
+  },
+
+  batchSetCollection: async (ids, collectionId) => {
+    try {
+      const res = await fetch('/api/prompts/batch-tags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids, action: 'setCollection', collectionId }),
+      })
+      if (!res.ok) throw new Error('批量设置收藏夹失败')
+      await Promise.all([get().fetchCollections(), get().fetchPrompts()])
+      return true
+    } catch (e) {
+      set({ error: (e as Error).message })
+      return false
+    }
+  },
+
+  batchDelete: async (ids) => {
+    try {
+      const res = await fetch('/api/prompts/batch-tags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids, action: 'delete' }),
+      })
+      if (!res.ok) throw new Error('批量删除失败')
+      set({
+        prompts: get().prompts.filter((p) => !ids.includes(p.id)),
+        selectedIds: new Set(),
+        selectionMode: false,
+      })
+      await Promise.all([get().fetchCategories(), get().fetchTags(), get().fetchCollections()])
+      return true
+    } catch (e) {
+      set({ error: (e as Error).message })
+      return false
+    }
+  },
+
+  // Collections
+  createCollection: async (input) => {
+    try {
+      const res = await fetch('/api/collections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || '创建失败')
+      }
+      await get().fetchCollections()
+      return true
+    } catch (e) {
+      set({ error: (e as Error).message })
+      return false
+    }
+  },
+
+  deleteCollection: async (id) => {
+    try {
+      const res = await fetch(`/api/collections/${id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error('删除失败')
+      await Promise.all([get().fetchCollections(), get().fetchPrompts()])
+      return true
+    } catch (e) {
+      set({ error: (e as Error).message })
+      return false
+    }
+  },
+
+  // AI background
+  recommendBackground: async (title, content, description) => {
+    try {
+      const res = await fetch('/api/ai-background', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, content, description }),
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || 'AI 推荐失败')
+      }
+      return await res.json()
+    } catch (e) {
+      set({ error: (e as Error).message })
+      return null
     }
   },
 
@@ -305,4 +511,4 @@ export const usePromptStore = create<PromptStore>((set, get) => ({
 }))
 
 export type { SortKey }
-export type { Prompt, CategoryWithCount, TagWithCount }
+export type { Prompt, CategoryWithCount, TagWithCount, CollectionWithCount, Background }

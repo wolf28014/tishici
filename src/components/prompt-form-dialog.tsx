@@ -33,13 +33,14 @@ const COLOR_OPTIONS = ['rose', 'emerald', 'amber', 'sky', 'violet', 'teal', 'pin
 
 export function PromptFormDialog({ open, onOpenChange, editPrompt }: Props) {
   const isEdit = !!editPrompt
-  const { categories, createPrompt, updatePrompt, tags: allTags } = usePromptStore()
+  const { categories, collections, createPrompt, updatePrompt, tags: allTags } = usePromptStore()
   const { toast } = useToast()
 
   const [title, setTitle] = React.useState('')
   const [content, setContent] = React.useState('')
   const [description, setDescription] = React.useState('')
   const [categoryId, setCategoryId] = React.useState<string>('none')
+  const [collectionId, setCollectionId] = React.useState<string>('none')
   const [tagsInput, setTagsInput] = React.useState('')
   const [tags, setTags] = React.useState<string[]>([])
   const [background, setBackground] = React.useState<Background | null>(null)
@@ -82,6 +83,7 @@ export function PromptFormDialog({ open, onOpenChange, editPrompt }: Props) {
       setContent(editPrompt.content)
       setDescription(editPrompt.description || '')
       setCategoryId(editPrompt.categoryId || 'none')
+      setCollectionId(editPrompt.collectionId || 'none')
       setTags(editPrompt.tags || [])
       setTagsInput('')
       setBackground(editPrompt.background || null)
@@ -93,6 +95,7 @@ export function PromptFormDialog({ open, onOpenChange, editPrompt }: Props) {
       setContent('')
       setDescription('')
       setCategoryId('none')
+      setCollectionId('none')
       setTags([])
       setTagsInput('')
       setBackground(null)
@@ -162,6 +165,7 @@ export function PromptFormDialog({ open, onOpenChange, editPrompt }: Props) {
       content: content.trim(),
       description: description.trim() || undefined,
       categoryId: categoryId === 'none' ? null : categoryId,
+      collectionId: collectionId === 'none' ? null : collectionId,
       tags,
       background,
       author: author.trim() || '匿名',
@@ -463,6 +467,30 @@ export function PromptFormDialog({ open, onOpenChange, editPrompt }: Props) {
             />
           </div>
 
+          {/* Collection */}
+          {collections.length > 0 && (
+            <div className="space-y-2">
+              <Label>收藏夹分组</Label>
+              <Select value={collectionId} onValueChange={setCollectionId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="选择收藏夹（可选）" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">无（不属于任何收藏夹）</SelectItem>
+                  {collections.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      <span className="inline-flex items-center gap-2">
+                        <span className={cn('h-2 w-2 rounded-full', `bg-${c.color || 'violet'}-500`)} />
+                        {c.name}
+                        <span className="text-xs text-muted-foreground">({c._count.prompts})</span>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           {/* Background */}
           <div className="space-y-2">
             <Label className="flex items-center gap-1.5">
@@ -472,7 +500,11 @@ export function PromptFormDialog({ open, onOpenChange, editPrompt }: Props) {
             <p className="text-xs text-muted-foreground">
               选择提示词关联的背景（颜色或图片），适用于 AI 模特、商品拍摄等场景
             </p>
-            <BackgroundSelector value={background} onChange={setBackground} />
+            <BackgroundSelector
+              value={background}
+              onChange={setBackground}
+              aiContext={{ title, content, description }}
+            />
           </div>
 
           {/* Toggles */}

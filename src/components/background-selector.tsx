@@ -4,33 +4,37 @@ import * as React from 'react'
 import { cn } from '@/lib/utils'
 import { PRESET_BACKGROUNDS, type Background } from '@/lib/prompt-types'
 import { Button } from '@/components/ui/button'
-import { Upload, X, ImageIcon, Check } from 'lucide-react'
+import { Upload, X, ImageIcon, Check, Sparkles, Loader2 } from 'lucide-react'
+import { usePromptStore } from '@/lib/prompt-store'
 
 type Props = {
   value: Background | null
   onChange: (bg: Background | null) => void
+  /** Context for AI recommendation: prompt title + content */
+  aiContext?: { title: string; content: string; description?: string }
 }
 
 const MAX_SIZE_BYTES = 5 * 1024 * 1024 // 5MB
 
-export function BackgroundSelector({ value, onChange }: Props) {
+export function BackgroundSelector({ value, onChange, aiContext }: Props) {
   const fileRef = React.useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
+  const [aiLoading, setAiLoading] = React.useState(false)
+  const [aiReason, setAiReason] = React.useState<string | null>(null)
+  const { recommendBackground } = usePromptStore()
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
     setError(null)
 
-    // Validate type
     if (!file.type.startsWith('image/')) {
       setError('请选择图片文件')
       if (fileRef.current) fileRef.current.value = ''
       return
     }
 
-    // Validate size
     if (file.size > MAX_SIZE_BYTES) {
       setError(`图片不能超过 5MB（当前 ${(file.size / 1024 / 1024).toFixed(2)}MB）`)
       if (fileRef.current) fileRef.current.value = ''
@@ -56,6 +60,34 @@ export function BackgroundSelector({ value, onChange }: Props) {
   const handleClear = () => {
     onChange(null)
     setError(null)
+    setAiReason(null)
+  }
+
+  const handleAIRecommend = async () => {
+    if (!aiContext || (!aiContext.title.trim() && !aiContext.content.trim())) {
+      setError('请先填写标题和内容，AI 才能推荐合适的背景')
+      return
+    }
+    setAiLoading(true)
+    setError(null)
+    setAiReason(null)
+    try {
+      const result = await recommendBackground(aiContext.title, aiContext.content, aiContext.description)
+      if (result) {
+        if (result.background) {
+          onChange(result.background)
+          setAiReason(result.reason || 'AI 已推荐')
+        } else if (result.recommendType === 'image' && result.imageKeyword) {
+          setAiReason(`AI 建议上传图片，搜索关键词：${result.imageKeyword}`)
+        } else {
+          setAiReason(result.reason || 'AI 无法推荐')
+        }
+      } else {
+        setError('AI 推荐失败，请重试')
+      }
+    } finally {
+      setAiLoading(false)
+    }
   }
 
   return (
@@ -89,6 +121,38 @@ export function BackgroundSelector({ value, onChange }: Props) {
           >
             <X className="h-3 w-3" />
           </button>
+        </div>
+      )}
+
+      {/* AI recommend */}
+      {aiContext && (
+        <div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="w-full gap-1.5 border-violet-300 text-violet-600 hover:bg-violet-50 dark:border-violet-700 dark:text-violet-300 dark:hover:bg-violet-950/40"
+            disabled={aiLoading}
+            onClick={handleAIRecommend}
+          >
+            {aiLoading ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                AI 推荐中...
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-3.5 w-3.5" />
+                AI 智能推荐背景
+              </>
+            )}
+          </Button>
+          {aiReason && (
+            <p className="text-xs text-violet-600 dark:text-violet-400 mt-1.5 flex items-start gap-1">
+              <Sparkles className="h-3 w-3 mt-0.5 flex-shrink-0" />
+              {aiReason}
+            </p>
+          )}
         </div>
       )}
 
@@ -173,7 +237,6 @@ function readFileAsDataURL(file: File): Promise<string> {
 
 function isLightBackground(bg: Background): boolean {
   if (bg.type === 'color') return isLightColor(bg.value)
-  // For images, we can't easily determine, default to false
   return false
 }
 
@@ -183,7 +246,7 @@ function isLightColor(hex: string): boolean {
   const r = parseInt(m[1], 16)
   const g = parseInt(m[2], 16)
   const b = parseInt(m[3], 16)
-  // Relative luminance
   const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255
   return lum > 0.5
 }
+

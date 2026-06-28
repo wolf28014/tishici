@@ -16,6 +16,21 @@ export type CategoryWithCount = Category & {
   children?: CategoryWithCount[]
 }
 
+export type Collection = {
+  id: string
+  name: string
+  description: string | null
+  icon: string | null
+  color: string | null
+  sortOrder: number
+  createdAt: string
+  updatedAt: string
+}
+
+export type CollectionWithCount = Collection & {
+  _count: { prompts: number }
+}
+
 export type Prompt = {
   id: string
   title: string
@@ -30,6 +45,9 @@ export type Prompt = {
   usageCount: number
   author: string | null
   source: string | null
+  sortOrder: number
+  collectionId: string | null
+  collection?: Collection | null
   createdAt: string
   updatedAt: string
 }
@@ -44,6 +62,7 @@ export type PromptInput = {
   isPinned?: boolean
   isFavorite?: boolean
   author?: string
+  collectionId?: string | null
 }
 
 // Background type: preset color or custom uploaded image

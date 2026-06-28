@@ -19,7 +19,10 @@ export async function GET(_req: NextRequest, { params }: Params) {
     const { id } = await params
     const prompt = await db.prompt.findUnique({
       where: { id },
-      include: { category: { include: { parent: true } } },
+      include: {
+        category: { include: { parent: true } },
+        collection: true,
+      },
     })
     if (!prompt) return NextResponse.json({ error: '未找到提示词' }, { status: 404 })
     return NextResponse.json({ prompt: { ...prompt, tags: parseTags(prompt.tags), background: parseBackground(prompt.background) } })
@@ -34,7 +37,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
   try {
     const { id } = await params
     const body = await req.json()
-    const { title, content, description, categoryId, tags, background, isPinned, isFavorite, author } = body
+    const { title, content, description, categoryId, tags, background, isPinned, isFavorite, author, collectionId } = body
 
     const existing = await db.prompt.findUnique({ where: { id } })
     if (!existing) return NextResponse.json({ error: '未找到提示词' }, { status: 404 })
@@ -59,8 +62,12 @@ export async function PUT(req: NextRequest, { params }: Params) {
         isPinned: isPinned !== undefined ? Boolean(isPinned) : existing.isPinned,
         isFavorite: isFavorite !== undefined ? Boolean(isFavorite) : existing.isFavorite,
         author: author !== undefined ? (author?.trim() || '匿名') : existing.author,
+        collectionId: collectionId !== undefined ? (collectionId || null) : existing.collectionId,
       },
-      include: { category: { include: { parent: true } } },
+      include: {
+        category: { include: { parent: true } },
+        collection: true,
+      },
     })
 
     return NextResponse.json({ prompt: { ...prompt, tags: parseTags(prompt.tags), background: parseBackground(prompt.background) } })
@@ -104,7 +111,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     const prompt = await db.prompt.update({
       where: { id },
       data,
-      include: { category: { include: { parent: true } } },
+      include: {
+        category: { include: { parent: true } },
+        collection: true,
+      },
     })
     return NextResponse.json({ prompt: { ...prompt, tags: parseTags(prompt.tags), background: parseBackground(prompt.background) } })
   } catch (err) {

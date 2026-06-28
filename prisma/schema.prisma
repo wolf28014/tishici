@@ -27,24 +27,41 @@ model Category {
   @@index([parentId])
 }
 
-model Prompt {
+model Collection {
   id          String   @id @default(cuid())
-  title       String
-  content     String
+  name        String
   description String?
-  categoryId  String?
-  category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  tags        String   @default("[]") // JSON-encoded string array
-  background  String?  // JSON: {type: 'color'|'image', value: string, name?: string}
-  isFavorite  Boolean  @default(false)
-  isPinned    Boolean  @default(false)
-  usageCount  Int      @default(0)
-  author      String?
-  source      String?
+  icon        String   @default("Folder")
+  color       String   @default("violet")
+  sortOrder   Int      @default(0)
+  prompts     Prompt[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model Prompt {
+  id            String       @id @default(cuid())
+  title         String
+  content       String
+  description   String?
+  categoryId    String?
+  category      Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  tags          String       @default("[]") // JSON-encoded string array
+  background    String?      // JSON: {type: 'color'|'image', value: string, name?: string}
+  isFavorite    Boolean      @default(false)
+  isPinned      Boolean      @default(false)
+  usageCount    Int          @default(0)
+  author        String?
+  source        String?
+  sortOrder     Int          @default(0) // custom drag-and-drop order
+  collectionId  String?
+  collection    Collection?  @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 
   @@index([categoryId])
   @@index([isFavorite])
   @@index([isPinned])
+  @@index([collectionId])
+  @@index([sortOrder])
 }

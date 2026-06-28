@@ -17,12 +17,14 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url)
     const q = searchParams.get('q')?.trim() || ''
     const categoryId = searchParams.get('categoryId') || ''
+    const collectionId = searchParams.get('collectionId') || ''
     const tag = searchParams.get('tag')?.trim() || ''
     const favorite = searchParams.get('favorite') === 'true'
     const sort = searchParams.get('sort') || 'pinned'
 
     const where: Record<string, unknown> = {}
     if (favorite) where.isFavorite = true
+    if (collectionId) where.collectionId = collectionId
     if (q) {
       where.OR = [
         { title: { contains: q } },
@@ -32,11 +34,9 @@ export async function GET(req: NextRequest) {
       ]
     }
     if (tag) {
-      // tags is JSON-encoded array, do a contains search on the string
       where.tags = { contains: tag }
     }
     if (categoryId) {
-      // include subcategories: find category and its descendants
       const cats = await db.category.findMany()
       const ids = new Set<string>([categoryId])
       let added = true
@@ -56,12 +56,16 @@ export async function GET(req: NextRequest) {
     if (sort === 'recent') orderBy = [{ createdAt: 'desc' }]
     else if (sort === 'usage') orderBy = [{ usageCount: 'desc' }]
     else if (sort === 'favorite') orderBy = [{ isFavorite: 'desc' }, { createdAt: 'desc' }]
-    else if (sort === 'pinned') orderBy = [{ isPinned: 'desc' }, { createdAt: 'desc' }]
+    else if (sort === 'pinned') orderBy = [{ isPinned: 'desc' }, { sortOrder: 'asc' }, { createdAt: 'desc' }]
+    else if (sort === 'custom') orderBy = [{ sortOrder: 'asc' }, { isPinned: 'desc' }, { createdAt: 'desc' }]
 
     const prompts = await db.prompt.findMany({
       where,
       orderBy,
-      include: { category: { include: { parent: true } } },
+      include: {
+        category: { include: { parent: true } },
+        collection: true,
+      },
     })
 
     const result = prompts.map((p) => ({
@@ -81,20 +85,22 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { title, content, description, categoryId, tags, background, isPinned, isFavorite, author } = body
+    const { title, content, description, categoryId, tags, background, isPinned, isFavorite, author, collectionId } = body
 
     if (!title?.trim() || !content?.trim()) {
       return NextResponse.json({ error: '标题和内容不能为空' }, { status: 400 })
     }
 
-    // Validate background image size (5MB limit for base64 data URL)
     if (background && background.type === 'image' && typeof background.value === 'string') {
-      // base64 string length ≈ 4/3 * actual bytes
       const estimatedBytes = (background.value.length * 3) / 4
       if (estimatedBytes > 5 * 1024 * 1024) {
         return NextResponse.json({ error: '背景图片不能超过 5MB' }, { status: 400 })
       }
     }
+
+    // New prompts get a sortOrder that puts them at the top (or after pinned)
+    const maxSort = await db.prompt.aggregate({ _max: { sortOrder: true } })
+    const newSortOrder = (maxSort._max.sortOrder || 0) + 1
 
     const prompt = await db.prompt.create({
       data: {
@@ -107,8 +113,13 @@ export async function POST(req: NextRequest) {
         isPinned: Boolean(isPinned),
         isFavorite: Boolean(isFavorite),
         author: author?.trim() || '匿名',
+        collectionId: collectionId || null,
+        sortOrder: newSortOrder,
       },
-      include: { category: { include: { parent: true } } },
+      include: {
+        category: { include: { parent: true } },
+        collection: true,
+      },
     })
 
     return NextResponse.json({ prompt: { ...prompt, tags: parseTags(prompt.tags), background: parseBackground(prompt.background) } })

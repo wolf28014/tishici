@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
   Star, Pin, Copy, Check, Hash, MoreVertical, Pencil, Trash2, Share2,
-  Eye, ImageIcon,
+  Eye, ImageIcon, GripVertical, Folder,
 } from 'lucide-react'
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -21,6 +21,7 @@ import { usePromptStore } from '@/lib/prompt-store'
 import { CategoryIcon } from '@/components/category-icon'
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
+import { useDragListeners } from '@/components/draggable-prompt-grid'
 
 type Props = {
   prompt: Prompt
@@ -29,12 +30,14 @@ type Props = {
 }
 
 export function PromptCard({ prompt, onEdit, onShare }: Props) {
-  const { selectPrompt, toggleFavorite, togglePin, deletePrompt, incrementUsage } = usePromptStore()
+  const { selectPrompt, toggleFavorite, togglePin, deletePrompt, incrementUsage, selectionMode, selectedIds, toggleSelected } = usePromptStore()
   const { toast } = useToast()
   const [copied, setCopied] = React.useState(false)
+  const dragListeners = useDragListeners()
 
   const color = getColorClass(prompt.category?.color)
   const hasBackground = !!prompt.background
+  const isSelected = selectedIds.has(prompt.id)
 
   const handleCopy = async (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -75,14 +78,24 @@ export function PromptCard({ prompt, onEdit, onShare }: Props) {
     }
   }
 
-  const handleCardClick = () => selectPrompt(prompt)
+  const handleCardClick = () => {
+    if (selectionMode) {
+      toggleSelected(prompt.id)
+    } else {
+      selectPrompt(prompt)
+    }
+  }
 
   return (
     <Card
       onClick={handleCardClick}
-      className="group relative cursor-pointer hover:shadow-md transition-shadow hover:border-primary/40 overflow-hidden"
+      className={cn(
+        'group relative cursor-pointer hover:shadow-md transition-shadow hover:border-primary/40 overflow-hidden',
+        selectionMode && isSelected && 'border-primary ring-2 ring-primary/30',
+        selectionMode && 'select-none',
+      )}
     >
-      {/* Background indicator strip (top of card) */}
+      {/* Background indicator strip */}
       {hasBackground && (
         <div
           className="h-1.5 w-full"
@@ -98,6 +111,29 @@ export function PromptCard({ prompt, onEdit, onShare }: Props) {
         />
       )}
 
+      {/* Drag handle (only in custom sort mode, non-selection) */}
+      {!selectionMode && dragListeners && (
+        <div
+          className="drag-handle absolute top-2 left-2 z-10 p-0.5 rounded bg-background/80 backdrop-blur opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
+          {...dragListeners}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <GripVertical className="h-4 w-4 text-muted-foreground" />
+        </div>
+      )}
+
+      {/* Selection checkbox */}
+      {selectionMode && (
+        <div className="absolute top-2 left-2 z-10">
+          <div className={cn(
+            'flex h-6 w-6 items-center justify-center rounded-full border-2 transition-all',
+            isSelected ? 'bg-primary border-primary text-primary-foreground' : 'bg-background/80 border-muted-foreground/50',
+          )}>
+            {isSelected && <Check className="h-3.5 w-3.5" />}
+          </div>
+        </div>
+      )}
+
       {prompt.isPinned && (
         <div className="absolute -top-2 -right-2 z-10">
           <div className="flex h-7 w-7 items-center justify-center rounded-full bg-amber-500 text-white shadow-md">
@@ -106,7 +142,7 @@ export function PromptCard({ prompt, onEdit, onShare }: Props) {
         </div>
       )}
 
-      <CardHeader className="pb-3 space-y-2">
+      <CardHeader className={cn('pb-3 space-y-2', (selectionMode || !selectionMode) && 'pl-8')}>
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
@@ -121,6 +157,12 @@ export function PromptCard({ prompt, onEdit, onShare }: Props) {
                   {prompt.category.name}
                 </Badge>
               )}
+              {prompt.collection && (
+                <Badge variant="outline" className="gap-1 text-[10px] border-violet-300 text-violet-700 dark:border-violet-700 dark:text-violet-300">
+                  <Folder className="h-2.5 w-2.5" />
+                  {prompt.collection.name}
+                </Badge>
+              )}
               {hasBackground && (
                 <Badge variant="outline" className="gap-1 text-[10px]" title="已设置背景">
                   <ImageIcon className="h-2.5 w-2.5" />
@@ -132,39 +174,38 @@ export function PromptCard({ prompt, onEdit, onShare }: Props) {
               {prompt.title}
             </h3>
           </div>
-          <div
-            className="flex-shrink-0"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7 opacity-60 group-hover:opacity-100">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-36">
-                <DropdownMenuItem onClick={handleEdit}>
-                  <Pencil className="h-3.5 w-3.5 mr-2" /> 编辑
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handlePin}>
-                  <Pin className="h-3.5 w-3.5 mr-2" />
-                  {prompt.isPinned ? '取消置顶' : '置顶'}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleFavorite}>
-                  <Star className="h-3.5 w-3.5 mr-2" />
-                  {prompt.isFavorite ? '取消收藏' : '收藏'}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleShare}>
-                  <Share2 className="h-3.5 w-3.5 mr-2" />
-                  分享
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleDelete} className="text-destructive focus:text-destructive">
-                  <Trash2 className="h-3.5 w-3.5 mr-2" /> 删除
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          {!selectionMode && (
+            <div className="flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 opacity-60 group-hover:opacity-100">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-36">
+                  <DropdownMenuItem onClick={handleEdit}>
+                    <Pencil className="h-3.5 w-3.5 mr-2" /> 编辑
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handlePin}>
+                    <Pin className="h-3.5 w-3.5 mr-2" />
+                    {prompt.isPinned ? '取消置顶' : '置顶'}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleFavorite}>
+                    <Star className="h-3.5 w-3.5 mr-2" />
+                    {prompt.isFavorite ? '取消收藏' : '收藏'}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleShare}>
+                    <Share2 className="h-3.5 w-3.5 mr-2" />
+                    分享
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleDelete} className="text-destructive focus:text-destructive">
+                    <Trash2 className="h-3.5 w-3.5 mr-2" /> 删除
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
         </div>
         {prompt.description ? (
           <p className="text-sm text-muted-foreground line-clamp-2">
@@ -193,26 +234,28 @@ export function PromptCard({ prompt, onEdit, onShare }: Props) {
           </span>
         </div>
 
-        <div className="flex items-center gap-1 flex-shrink-0">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7"
-            onClick={handleFavorite}
-            title={prompt.isFavorite ? '取消收藏' : '收藏'}
-          >
-            <Star className={`h-3.5 w-3.5 ${prompt.isFavorite ? 'fill-amber-400 text-amber-400' : ''}`} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7"
-            onClick={handleCopy}
-            title="复制提示词"
-          >
-            {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
-          </Button>
-        </div>
+        {!selectionMode && (
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7"
+              onClick={handleFavorite}
+              title={prompt.isFavorite ? '取消收藏' : '收藏'}
+            >
+              <Star className={`h-3.5 w-3.5 ${prompt.isFavorite ? 'fill-amber-400 text-amber-400' : ''}`} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7"
+              onClick={handleCopy}
+              title="复制提示词"
+            >
+              {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+            </Button>
+          </div>
+        )}
       </CardFooter>
     </Card>
   )

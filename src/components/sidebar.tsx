@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
   Library, Star, Layers, Plus, ChevronRight, Tag as TagIcon,
+  FolderPlus, FolderOpen,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -17,14 +18,16 @@ const storeActions = () => usePromptStore.getState()
 
 type Props = {
   onAddNew: () => void
+  onManageCollections: () => void
 }
 
-export function Sidebar({ onAddNew }: Props) {
+export function Sidebar({ onAddNew, onManageCollections }: Props) {
   const {
     categories, activeCategoryId, setActiveCategoryId,
     showFavoritesOnly, setShowFavoritesOnly, prompts,
     expandedCategoryIds, toggleCategoryExpanded,
     tags, activeTag, setActiveTag,
+    collections, activeCollectionId, setActiveCollectionId,
   } = usePromptStore()
 
   const total = prompts.length
@@ -44,12 +47,13 @@ export function Sidebar({ onAddNew }: Props) {
         </div>
 
         <SidebarItem
-          active={activeCategoryId === null && !showFavoritesOnly && !activeTag}
+          active={activeCategoryId === null && !showFavoritesOnly && !activeTag && !activeCollectionId}
           onClick={() => {
             const s = storeActions()
             s.setActiveCategoryId(null)
             s.setShowFavoritesOnly(false)
             s.setActiveTag(null)
+            s.setActiveCollectionId(null)
           }}
           icon={Library}
           label="全部提示词"
@@ -63,6 +67,7 @@ export function Sidebar({ onAddNew }: Props) {
             s.setShowFavoritesOnly(true)
             s.setActiveCategoryId(null)
             s.setActiveTag(null)
+            s.setActiveCollectionId(null)
           }}
           icon={Star}
           label="我的收藏"
@@ -70,13 +75,64 @@ export function Sidebar({ onAddNew }: Props) {
           accent="amber"
         />
 
+        {/* Collections section */}
+        <div className="px-2 pb-1 pt-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center justify-between">
+          <span>收藏夹</span>
+          <button
+            onClick={onManageCollections}
+            className="text-muted-foreground hover:text-foreground"
+            title="管理收藏夹"
+          >
+            <FolderPlus className="h-3.5 w-3.5" />
+          </button>
+        </div>
+
+        {collections.length === 0 ? (
+          <button
+            onClick={onManageCollections}
+            className="w-full text-left px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"
+          >
+            + 创建第一个收藏夹
+          </button>
+        ) : (
+          collections.map((c) => {
+            const active = activeCollectionId === c.id && !showFavoritesOnly && !activeTag
+            const color = getColorClass(c.color)
+            return (
+              <button
+                key={c.id}
+                onClick={() => {
+                  const s = storeActions()
+                  s.setActiveCollectionId(active ? null : c.id)
+                  s.setShowFavoritesOnly(false)
+                }}
+                className={cn(
+                  'w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-colors hover:bg-accent',
+                  active && 'bg-accent',
+                )}
+              >
+                <span className={cn(
+                  'flex h-7 w-7 items-center justify-center rounded-md flex-shrink-0',
+                  color.soft, color.text,
+                )}>
+                  <CategoryIcon name={c.icon} className="h-3.5 w-3.5" />
+                </span>
+                <span className="flex-1 text-left truncate">{c.name}</span>
+                <Badge variant="secondary" className="text-xs font-normal">
+                  {c._count.prompts}
+                </Badge>
+              </button>
+            )
+          })
+        )}
+
         <div className="px-2 pb-1 pt-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center justify-between">
           <span>分类</span>
         </div>
 
         {categories.map((c) => {
           const color = getColorClass(c.color)
-          const active = activeCategoryId === c.id && !showFavoritesOnly && !activeTag
+          const active = activeCategoryId === c.id && !showFavoritesOnly && !activeTag && !activeCollectionId
           const hasChildren = c.children && c.children.length > 0
           const expanded = expandedCategoryIds.has(c.id)
           return (
@@ -124,7 +180,7 @@ export function Sidebar({ onAddNew }: Props) {
                 <div className="ml-4 mt-0.5 mb-1 border-l pl-2 space-y-0.5">
                   {c.children!.map((sub) => {
                     const subColor = getColorClass(sub.color)
-                    const subActive = activeCategoryId === sub.id && !showFavoritesOnly && !activeTag
+                    const subActive = activeCategoryId === sub.id && !showFavoritesOnly && !activeTag && !activeCollectionId
                     return (
                       <button
                         key={sub.id}
