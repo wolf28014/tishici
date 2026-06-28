@@ -16,7 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import {
   Sparkles, Search, Plus, Pin, Clock, TrendingUp, Library, Star,
   Download, Tag as TagIcon, ShoppingBag, Snowflake, Clapperboard, Share2,
-  CheckSquare, X, FolderOpen, Cloud, Wand2, Palette,
+  CheckSquare, X, FolderOpen, Cloud, Wand2, Palette, Settings2, Key,
   type LucideIcon,
 } from 'lucide-react'
 import { Sidebar } from '@/components/sidebar'
@@ -31,6 +31,10 @@ import { CollectionManagerDialog } from '@/components/collection-manager-dialog'
 import { CloudSyncDialog } from '@/components/cloud-sync-dialog'
 import { AIGenerateDialog } from '@/components/ai-generate-dialog'
 import { PageBackgroundSettings } from '@/components/page-background-settings'
+import { QuickTagsSettings } from '@/components/quick-tags-settings'
+import { ApiSettings } from '@/components/api-settings'
+import { useQuickTags } from '@/lib/settings-store'
+import { CategoryIcon } from '@/components/category-icon'
 import { ThemeToggle } from '@/components/theme-toggle'
 import type { Prompt } from '@/lib/prompt-types'
 import { decodePromptFromShare } from '@/lib/prompt-types'
@@ -56,6 +60,9 @@ export default function Home() {
   const [syncOpen, setSyncOpen] = React.useState(false)
   const [aiGenerateOpen, setAiGenerateOpen] = React.useState(false)
   const [pageBgOpen, setPageBgOpen] = React.useState(false)
+  const [quickTagsOpen, setQuickTagsOpen] = React.useState(false)
+  const [apiSettingsOpen, setApiSettingsOpen] = React.useState(false)
+  const { tags: customQuickTags, loaded: quickTagsLoaded } = useQuickTags()
   const [shareImportData, setShareImportData] = React.useState<{
     title: string
     content: string
@@ -180,13 +187,31 @@ export default function Home() {
 
   // Quick category shortcuts (ecommerce-focused)
   const quickCategories = React.useMemo(() => {
-    const findCat = (name: string) => categories.find((c) => c.name === name)
-    return [
-      { name: '电商运营', icon: ShoppingBag, color: 'amber', cat: findCat('电商运营') },
-      { name: 'AI模特商拍', icon: Snowflake, color: 'pink', cat: findCat('AI模特商拍') },
-      { name: 'AI短剧制作', icon: Clapperboard, color: 'rose', cat: findCat('AI短剧制作') },
-    ].filter((x) => x.cat)
-  }, [categories])
+    // 使用自定义标签（如果已加载），否则用默认
+    if (!quickTagsLoaded) return []
+    return customQuickTags.map((tag) => {
+      const cat = tag.categoryId ? categories.find((c) => c.id === tag.categoryId) : null
+      return {
+        id: tag.id,
+        name: tag.name,
+        icon: tag.icon,
+        color: tag.color,
+        cat,
+        categoryId: tag.categoryId,
+      }
+    })
+  }, [customQuickTags, quickTagsLoaded, categories])
+
+  const COLOR_GRADIENTS: Record<string, string> = {
+    amber: 'bg-gradient-to-br from-amber-400 to-orange-500',
+    pink: 'bg-gradient-to-br from-pink-400 to-rose-500',
+    rose: 'bg-gradient-to-br from-rose-400 to-red-500',
+    violet: 'bg-gradient-to-br from-violet-400 to-purple-500',
+    emerald: 'bg-gradient-to-br from-emerald-400 to-green-500',
+    sky: 'bg-gradient-to-br from-sky-400 to-blue-500',
+    teal: 'bg-gradient-to-br from-teal-400 to-cyan-500',
+    orange: 'bg-gradient-to-br from-orange-400 to-amber-600',
+  }
 
   const hasFilters = !!searchQuery || showFavoritesOnly || activeCategoryId || activeTag || activeCollectionId
 
@@ -301,6 +326,15 @@ export default function Home() {
             >
               <Palette className="h-4 w-4" />
             </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setApiSettingsOpen(true)}
+              title="API 配置设置"
+              className="h-9 w-9"
+            >
+              <Key className="h-4 w-4" />
+            </Button>
             <ThemeToggle />
           </div>
         </div>
@@ -348,62 +382,88 @@ export default function Home() {
               <SortSelect sortBy={sortBy} setSortBy={setSortBy} />
             </div>
 
-            {/* Quick access for ecommerce / AI model / AI drama - Hero cards */}
-            <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {quickCategories.map(({ name, icon: Icon, color, cat }) => {
-                const totalCount = cat
-                  ? cat._count.prompts + (cat.children?.reduce((s, c) => s + c._count.prompts, 0) || 0)
-                  : 0
-                const isActive = activeCategoryId === cat?.id
-                return (
-                  <button
-                    key={name}
-                    onClick={() => usePromptStore.getState().setActiveCategoryId(cat?.id || null)}
-                    className={cn(
-                      'group relative overflow-hidden rounded-xl border p-5 text-left transition-all hover:shadow-lg hover:-translate-y-0.5',
-                      isActive
-                        ? 'border-primary ring-2 ring-primary/20 shadow-md'
-                        : 'border-border hover:border-primary/40',
-                    )}
-                  >
-                    {/* Gradient background accent */}
-                    <div className={cn(
-                      'absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity',
-                      color === 'amber' && 'bg-gradient-to-br from-amber-50/60 to-transparent dark:from-amber-950/20',
-                      color === 'pink' && 'bg-gradient-to-br from-pink-50/60 to-transparent dark:from-pink-950/20',
-                      color === 'rose' && 'bg-gradient-to-br from-rose-50/60 to-transparent dark:from-rose-950/20',
-                    )} />
-
-                    <div className="relative flex items-start gap-4">
-                      {/* Large icon */}
+            {/* Quick access - Hero cards (customizable) */}
+            <div className="mb-6 flex items-start gap-4 flex-wrap">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 flex-1">
+                {quickCategories.map(({ id, name, icon, color, cat, categoryId }) => {
+                  const totalCount = cat
+                    ? cat._count.prompts + (cat.children?.reduce((s, c) => s + c._count.prompts, 0) || 0)
+                    : 0
+                  const isActive = categoryId ? activeCategoryId === categoryId : false
+                  return (
+                    <button
+                      key={id}
+                      onClick={() => {
+                        if (categoryId) {
+                          usePromptStore.getState().setActiveCategoryId(categoryId)
+                        }
+                      }}
+                      className={cn(
+                        'group relative overflow-hidden rounded-xl border p-5 text-left transition-all hover:shadow-lg hover:-translate-y-0.5',
+                        isActive
+                          ? 'border-primary ring-2 ring-primary/20 shadow-md'
+                          : 'border-border hover:border-primary/40',
+                        !categoryId && 'opacity-60',
+                      )}
+                    >
+                      {/* Gradient background accent */}
                       <div className={cn(
-                        'flex h-14 w-14 items-center justify-center rounded-xl flex-shrink-0 shadow-sm',
-                        color === 'amber' && 'bg-gradient-to-br from-amber-400 to-orange-500 text-white',
-                        color === 'pink' && 'bg-gradient-to-br from-pink-400 to-rose-500 text-white',
-                        color === 'rose' && 'bg-gradient-to-br from-rose-400 to-red-500 text-white',
-                      )}>
-                        <Icon className="h-7 w-7" />
-                      </div>
+                        'absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity',
+                        COLOR_GRADIENTS[color] ? `${COLOR_GRADIENTS[color]} opacity-10` : '',
+                      )} />
 
-                      {/* Text content */}
-                      <div className="flex-1 min-w-0 pt-0.5">
-                        <div className="text-xl font-bold tracking-tight truncate">
-                          {name}
+                      <div className="relative flex items-start gap-4">
+                        {/* Large icon */}
+                        <div className={cn(
+                          'flex h-14 w-14 items-center justify-center rounded-xl flex-shrink-0 shadow-sm text-white',
+                          COLOR_GRADIENTS[color] || COLOR_GRADIENTS.violet,
+                        )}>
+                          <CategoryIcon name={icon} className="h-7 w-7" />
                         </div>
-                        <div className="text-sm text-muted-foreground mt-1 flex items-center gap-1.5">
-                          <span className="font-medium text-foreground">{totalCount}</span>
-                          条提示词
-                          {totalCount > 0 && (
-                            <span className="text-xs text-muted-foreground/70">
-                              · 点击查看
-                            </span>
-                          )}
+
+                        {/* Text content */}
+                        <div className="flex-1 min-w-0 pt-0.5">
+                          <div className="text-xl font-bold tracking-tight truncate">
+                            {name}
+                          </div>
+                          <div className="text-sm text-muted-foreground mt-1 flex items-center gap-1.5">
+                            {categoryId ? (
+                              <>
+                                <span className="font-medium text-foreground">{totalCount}</span>
+                                条提示词
+                                {totalCount > 0 && (
+                                  <span className="text-xs text-muted-foreground/70">
+                                    · 点击查看
+                                  </span>
+                                )}
+                              </>
+                            ) : (
+                              <span className="text-xs">未关联分类</span>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </button>
-                )
-              })}
+                    </button>
+                  )
+                })}
+                {quickCategories.length === 0 && (
+                  <div className="col-span-3 rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
+                    暂无快捷标签，点击右上角设置按钮添加
+                  </div>
+                )}
+              </div>
+
+              {/* Settings button */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setQuickTagsOpen(true)}
+                className="gap-1.5 flex-shrink-0"
+                title="编辑快捷标签"
+              >
+                <Settings2 className="h-4 w-4" />
+                <span className="hidden sm:inline">标签设置</span>
+              </Button>
             </div>
 
             {/* Stats row (desktop) */}
@@ -521,6 +581,14 @@ export default function Home() {
       <PageBackgroundSettings
         open={pageBgOpen}
         onOpenChange={setPageBgOpen}
+      />
+      <QuickTagsSettings
+        open={quickTagsOpen}
+        onOpenChange={setQuickTagsOpen}
+      />
+      <ApiSettings
+        open={apiSettingsOpen}
+        onOpenChange={setApiSettingsOpen}
       />
 
       {/* Share link import dialog */}
