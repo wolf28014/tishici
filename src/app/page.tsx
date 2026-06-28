@@ -16,7 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import {
   Sparkles, Search, Plus, Pin, Clock, TrendingUp, Library, Star,
   Download, Tag as TagIcon, ShoppingBag, Snowflake, Clapperboard, Share2,
-  CheckSquare, X, FolderOpen, Cloud, Wand2,
+  CheckSquare, X, FolderOpen, Cloud, Wand2, Palette,
   type LucideIcon,
 } from 'lucide-react'
 import { Sidebar } from '@/components/sidebar'
@@ -30,6 +30,7 @@ import { BatchEditDialog } from '@/components/batch-edit-dialog'
 import { CollectionManagerDialog } from '@/components/collection-manager-dialog'
 import { CloudSyncDialog } from '@/components/cloud-sync-dialog'
 import { AIGenerateDialog } from '@/components/ai-generate-dialog'
+import { PageBackgroundSettings } from '@/components/page-background-settings'
 import { ThemeToggle } from '@/components/theme-toggle'
 import type { Prompt } from '@/lib/prompt-types'
 import { decodePromptFromShare } from '@/lib/prompt-types'
@@ -54,6 +55,7 @@ export default function Home() {
   const [collectionOpen, setCollectionOpen] = React.useState(false)
   const [syncOpen, setSyncOpen] = React.useState(false)
   const [aiGenerateOpen, setAiGenerateOpen] = React.useState(false)
+  const [pageBgOpen, setPageBgOpen] = React.useState(false)
   const [shareImportData, setShareImportData] = React.useState<{
     title: string
     content: string
@@ -290,6 +292,15 @@ export default function Home() {
             <Button onClick={handleNew} size="icon" className="sm:hidden h-9 w-9">
               <Plus className="h-4 w-4" />
             </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setPageBgOpen(true)}
+              title="页面背景设置"
+              className="h-9 w-9"
+            >
+              <Palette className="h-4 w-4" />
+            </Button>
             <ThemeToggle />
           </div>
         </div>
@@ -506,6 +517,10 @@ export default function Home() {
         open={aiGenerateOpen}
         onOpenChange={setAiGenerateOpen}
         onApply={handleAIGenerateApply}
+      />
+      <PageBackgroundSettings
+        open={pageBgOpen}
+        onOpenChange={setPageBgOpen}
       />
 
       {/* Share link import dialog */}

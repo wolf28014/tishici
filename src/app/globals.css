@@ -118,7 +118,28 @@
   }
   body {
     @apply bg-background text-foreground;
+    transition: background-color 0.3s ease, background-image 0.3s ease;
   }
+}
+
+/* When a custom page background is applied, ensure content areas stay readable */
+body.custom-page-bg header,
+body.custom-page-bg main,
+body.custom-page-bg aside,
+body.custom-page-bg footer {
+  background-color: hsl(var(--background) / 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Keep the main content area fully opaque for readability */
+body.custom-page-bg main > div {
+  background-color: transparent;
+}
+
+/* Header stays semi-transparent with blur */
+body.custom-page-bg header {
+  background-color: hsl(var(--background) / 0.7) !important;
 }
 
 /* Sidebar scroll styling */
