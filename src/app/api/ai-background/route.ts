@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import ZAI from 'z-ai-web-dev-sdk'
+import { getAIConfigFromRequest, callAI } from '@/lib/ai-client'
 import { PRESET_BACKGROUNDS, type Background } from '@/lib/prompt-types'
 
 // POST /api/ai-background - recommend a background based on prompt content
 // Body: { title: string, content: string, description?: string }
 export async function POST(req: NextRequest) {
   try {
+    const config = getAIConfigFromRequest(req)
     const body = await req.json()
     const { title, content, description } = body as {
       title: string
@@ -17,17 +18,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: '请提供标题或内容' }, { status: 400 })
     }
 
-    const zai = await ZAI.create()
-
     const presetNames = PRESET_BACKGROUNDS.map((b) => b.name).join('、')
     const presetValues = PRESET_BACKGROUNDS.map((b) => `${b.name}(${b.value})`).join('、')
 
-    const completion = await zai.chat.completions.create({
-      messages: [
-        {
-          role: 'system',
-          content: `你是一位专业的电商视觉设计顾问。根据用户提供的提示词内容，推荐最合适的背景。
-          
+    const responseText = await callAI(config, [
+      {
+        role: 'system',
+        content: `你是一位专业的电商视觉设计顾问。根据用户提供的提示词内容，推荐最合适的背景。
+
 你的任务：
 1. 分析提示词的应用场景（电商白底、街拍、雪景、户外、室内等）
 2. 从以下 6 个预设纯色中选择最合适的一个：${presetNames}（对应色值：${presetValues}）
@@ -40,16 +38,12 @@ export async function POST(req: NextRequest) {
   "reason": "选择该背景的简短理由（30字内）",
   "imageKeyword": "如果是 image 类型，给出图片搜索关键词（中英文）"
 }`,
-        },
-        {
-          role: 'user',
-          content: `标题：${title}\n描述：${description || '无'}\n内容：${content}`,
-        },
-      ],
-      thinking: { type: 'disabled' },
-    })
-
-    const responseText = completion.choices[0]?.message?.content || ''
+      },
+      {
+        role: 'user',
+        content: `标题：${title}\n描述：${description || '无'}\n内容：${content}`,
+      },
+    ])
 
     // Try to parse JSON from response
     let recommendation: {

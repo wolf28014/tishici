@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import ZAI from 'z-ai-web-dev-sdk'
+import { getAIConfigFromRequest, callAI } from '@/lib/ai-client'
 import { db } from '@/lib/db'
 
 function parseTags(tags: string): string[] {
@@ -15,6 +15,7 @@ function parseTags(tags: string): string[] {
 // Body: { promptId: string } - find prompts similar to this one
 export async function POST(req: NextRequest) {
   try {
+    const config = getAIConfigFromRequest(req)
     const body = await req.json()
     const { promptId } = body as { promptId: string }
 
@@ -35,19 +36,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ similar: [] })
     }
 
-    const zai = await ZAI.create()
-
     // Build a compact list for AI
     const promptList = allPrompts.map((p, i) => {
       const tags = parseTags(p.tags)
       return `${i + 1}. [ID:${p.id}] ${p.title} | ${p.description || ''} | 标签:${tags.join(',')} | 内容前80字:${p.content.substring(0, 80)}`
     }).join('\n')
 
-    const completion = await zai.chat.completions.create({
-      messages: [
-        {
-          role: 'system',
-          content: `你是一位提示词库管理助手。你的任务是从给定的提示词列表中，找出与目标提示词最相似的 5 个。
+    const responseText = await callAI(config, [
+      {
+        role: 'system',
+        content: `你是一位提示词库管理助手。你的任务是从给定的提示词列表中，找出与目标提示词最相似的 5 个。
 
 相似度判断标准：
 1. 主题相似（同为电商/写作/编程等）
@@ -63,10 +61,10 @@ export async function POST(req: NextRequest) {
 }
 
 最多返回 5 个，按相似度从高到低排序。score 范围 0-1。`,
-        },
-        {
-          role: 'user',
-          content: `目标提示词：
+      },
+      {
+        role: 'user',
+        content: `目标提示词：
 标题：${target.title}
 描述：${target.description || '无'}
 内容前200字：${target.content.substring(0, 200)}
@@ -75,12 +73,8 @@ export async function POST(req: NextRequest) {
 ${promptList}
 
 请找出最相似的 5 个。`,
-        },
-      ],
-      thinking: { type: 'disabled' },
-    })
-
-    const responseText = completion.choices[0]?.message?.content || ''
+      },
+    ])
 
     let result: { similar: Array<{ id: string; reason: string; score: number }> }
     try {
