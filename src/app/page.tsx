@@ -211,16 +211,16 @@ export default function Home() {
   const selectedIdsArray = Array.from(selectedIds)
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-muted/20">
       {/* Header */}
-      <header className="sticky top-0 z-30 h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="flex h-14 items-center gap-2 px-3 sm:px-4">
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white shadow-sm">
-              <Sparkles className="h-4 w-4" />
+      <header className="sticky top-0 z-30 h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+        <div className="flex h-14 items-center gap-2 px-3 sm:px-5">
+          <div className="flex items-center gap-2.5 flex-shrink-0">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white shadow-md">
+              <Sparkles className="h-4.5 w-4.5" />
             </div>
             <div className="hidden sm:block">
-              <div className="text-base font-semibold leading-tight">提示词库</div>
+              <div className="text-base font-bold leading-tight tracking-tight">提示词库</div>
               <div className="text-[10px] text-muted-foreground leading-tight">PromptHub</div>
             </div>
           </div>
@@ -228,12 +228,12 @@ export default function Home() {
           {/* Search */}
           <div className="flex-1 max-w-2xl mx-auto">
             <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="搜索标题、内容、标签..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 h-9"
+                className="pl-10 h-9 bg-muted/40 border-transparent focus-visible:bg-background"
               />
             </div>
           </div>
@@ -329,41 +329,65 @@ export default function Home() {
       <div className="flex flex-1">
         <Sidebar onAddNew={handleNew} onManageCollections={() => setCollectionOpen(true)} />
 
-        <main className="flex-1 min-w-0">
-          <div className="container max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+        <main className="flex-1 min-w-0 bg-background">
+          <div className="container max-w-7xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
             {/* Mobile filter + sort row */}
-            <div className="lg:hidden flex items-center justify-between gap-2 mb-4">
+            <div className="lg:hidden flex items-center justify-between gap-2 mb-5">
               <MobileFilter />
               <SortSelect sortBy={sortBy} setSortBy={setSortBy} />
             </div>
 
-            {/* Quick access for ecommerce / AI model / AI drama */}
-            <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {/* Quick access for ecommerce / AI model / AI drama - Hero cards */}
+            <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
               {quickCategories.map(({ name, icon: Icon, color, cat }) => {
                 const totalCount = cat
                   ? cat._count.prompts + (cat.children?.reduce((s, c) => s + c._count.prompts, 0) || 0)
                   : 0
+                const isActive = activeCategoryId === cat?.id
                 return (
                   <button
                     key={name}
                     onClick={() => usePromptStore.getState().setActiveCategoryId(cat?.id || null)}
                     className={cn(
-                      'group relative overflow-hidden rounded-lg border bg-card p-4 text-left transition-all hover:shadow-md hover:border-primary/40',
-                      activeCategoryId === cat?.id && 'border-primary ring-2 ring-primary/20',
+                      'group relative overflow-hidden rounded-xl border p-5 text-left transition-all hover:shadow-lg hover:-translate-y-0.5',
+                      isActive
+                        ? 'border-primary ring-2 ring-primary/20 shadow-md'
+                        : 'border-border hover:border-primary/40',
                     )}
                   >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
-                        <div className={cn(
-                          'inline-flex h-9 w-9 items-center justify-center rounded-md mb-2',
-                          color === 'amber' && 'bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-300',
-                          color === 'pink' && 'bg-pink-50 text-pink-600 dark:bg-pink-950/40 dark:text-pink-300',
-                          color === 'rose' && 'bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-300',
-                        )}>
-                          <Icon className="h-4 w-4" />
+                    {/* Gradient background accent */}
+                    <div className={cn(
+                      'absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity',
+                      color === 'amber' && 'bg-gradient-to-br from-amber-50/60 to-transparent dark:from-amber-950/20',
+                      color === 'pink' && 'bg-gradient-to-br from-pink-50/60 to-transparent dark:from-pink-950/20',
+                      color === 'rose' && 'bg-gradient-to-br from-rose-50/60 to-transparent dark:from-rose-950/20',
+                    )} />
+
+                    <div className="relative flex items-start gap-4">
+                      {/* Large icon */}
+                      <div className={cn(
+                        'flex h-14 w-14 items-center justify-center rounded-xl flex-shrink-0 shadow-sm',
+                        color === 'amber' && 'bg-gradient-to-br from-amber-400 to-orange-500 text-white',
+                        color === 'pink' && 'bg-gradient-to-br from-pink-400 to-rose-500 text-white',
+                        color === 'rose' && 'bg-gradient-to-br from-rose-400 to-red-500 text-white',
+                      )}>
+                        <Icon className="h-7 w-7" />
+                      </div>
+
+                      {/* Text content */}
+                      <div className="flex-1 min-w-0 pt-0.5">
+                        <div className="text-xl font-bold tracking-tight truncate">
+                          {name}
                         </div>
-                        <div className="text-sm font-semibold truncate">{name}</div>
-                        <div className="text-xs text-muted-foreground mt-0.5">{totalCount} 条提示词</div>
+                        <div className="text-sm text-muted-foreground mt-1 flex items-center gap-1.5">
+                          <span className="font-medium text-foreground">{totalCount}</span>
+                          条提示词
+                          {totalCount > 0 && (
+                            <span className="text-xs text-muted-foreground/70">
+                              · 点击查看
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </button>
@@ -395,13 +419,13 @@ export default function Home() {
             </div>
 
             {/* Section title + sort (desktop) */}
-            <div className="hidden lg:flex items-center justify-between mb-4">
+            <div className="hidden lg:flex items-center justify-between mb-5 pb-3 border-b">
               <div>
-                <h2 className="text-lg font-semibold flex items-center gap-2">
-                  {activeTag && <TagIcon className="h-4 w-4 text-violet-500" />}
+                <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+                  {activeTag && <TagIcon className="h-5 w-5 text-violet-500" />}
                   {currentTitle}
                 </h2>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-sm text-muted-foreground mt-1">
                   {loading ? '加载中...' : `共 ${prompts.length} 条`}
                   {searchQuery && ` · 关键词「${searchQuery}」`}
                 </p>
@@ -410,8 +434,8 @@ export default function Home() {
             </div>
 
             {/* Mobile section title */}
-            <div className="lg:hidden mb-3">
-              <h2 className="text-base font-semibold flex items-center gap-2">
+            <div className="lg:hidden mb-4 pb-3 border-b">
+              <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
                 {activeTag && <TagIcon className="h-4 w-4 text-violet-500" />}
                 {currentTitle}
               </h2>
@@ -434,8 +458,12 @@ export default function Home() {
             )}
 
             {/* Footer */}
-            <footer className="mt-12 pt-6 border-t text-center text-xs text-muted-foreground">
-              提示词库 · PromptHub — 管理你的 AI 创意资产
+            <footer className="mt-16 pt-8 border-t text-center text-xs text-muted-foreground">
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <Sparkles className="h-3.5 w-3.5 text-violet-400" />
+                <span className="font-medium">提示词库 · PromptHub</span>
+              </div>
+              <div>管理你的 AI 创意资产 · 让每个提示词都触手可及</div>
             </footer>
           </div>
         </main>
@@ -554,19 +582,19 @@ function StatCard({
   color: 'violet' | 'amber' | 'rose' | 'emerald'
 }) {
   const colorClasses = {
-    violet: 'bg-violet-50 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300',
-    amber: 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300',
-    rose: 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300',
-    emerald: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300',
+    violet: 'bg-violet-50 dark:bg-violet-950/40 text-violet-600 dark:text-violet-300',
+    amber: 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-300',
+    rose: 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-300',
+    emerald: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-300',
   }
   return (
-    <div className="rounded-lg border bg-card p-4 flex items-center gap-3">
-      <div className={cn('flex h-10 w-10 items-center justify-center rounded-md', colorClasses[color])}>
+    <div className="rounded-xl border bg-card p-4 flex items-center gap-3 hover:shadow-sm transition-shadow">
+      <div className={cn('flex h-11 w-11 items-center justify-center rounded-lg', colorClasses[color])}>
         <Icon className="h-5 w-5" />
       </div>
       <div className="min-w-0">
         <div className="text-xs text-muted-foreground">{label}</div>
-        <div className="text-xl font-semibold tabular-nums">{value}</div>
+        <div className="text-2xl font-bold tabular-nums leading-tight">{value}</div>
       </div>
     </div>
   )

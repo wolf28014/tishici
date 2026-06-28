@@ -90,7 +90,7 @@ export function PromptCard({ prompt, onEdit, onShare }: Props) {
     <Card
       onClick={handleCardClick}
       className={cn(
-        'group relative cursor-pointer hover:shadow-md transition-shadow hover:border-primary/40 overflow-hidden',
+        'group relative cursor-pointer transition-all hover:shadow-lg hover:-translate-y-0.5 hover:border-primary/40 overflow-hidden',
         selectionMode && isSelected && 'border-primary ring-2 ring-primary/30',
         selectionMode && 'select-none',
       )}

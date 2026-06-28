@@ -34,15 +34,15 @@ export function Sidebar({ onAddNew, onManageCollections }: Props) {
   const favoriteCount = prompts.filter((p) => p.isFavorite).length
 
   return (
-    <aside className="hidden lg:flex flex-col w-64 border-r bg-card/50 h-[calc(100vh-3.5rem)] sticky top-14">
-      <div className="p-3 border-b">
-        <Button onClick={onAddNew} className="w-full gap-1.5" size="sm">
+    <aside className="hidden lg:flex flex-col w-64 border-r bg-muted/30 h-[calc(100vh-3.5rem)] sticky top-14">
+      <div className="p-3 border-b bg-background/50">
+        <Button onClick={onAddNew} className="w-full gap-1.5 shadow-sm" size="sm">
           <Plus className="h-4 w-4" /> 新建提示词
         </Button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-3 space-y-1 sidebar-scroll">
-        <div className="px-2 pb-1 pt-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+      <div className="flex-1 overflow-y-auto p-3 space-y-0.5 sidebar-scroll">
+        <div className="px-2 pb-1.5 pt-1 text-[11px] font-bold text-muted-foreground/70 uppercase tracking-wider">
           浏览
         </div>
 
@@ -76,7 +76,7 @@ export function Sidebar({ onAddNew, onManageCollections }: Props) {
         />
 
         {/* Collections section */}
-        <div className="px-2 pb-1 pt-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center justify-between">
+        <div className="px-2 pb-1.5 pt-4 text-[11px] font-bold text-muted-foreground/70 uppercase tracking-wider flex items-center justify-between">
           <span>收藏夹</span>
           <button
             onClick={onManageCollections}
@@ -126,7 +126,7 @@ export function Sidebar({ onAddNew, onManageCollections }: Props) {
           })
         )}
 
-        <div className="px-2 pb-1 pt-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center justify-between">
+        <div className="px-2 pb-1.5 pt-4 text-[11px] font-bold text-muted-foreground/70 uppercase tracking-wider flex items-center justify-between">
           <span>分类</span>
         </div>
 
@@ -217,36 +217,39 @@ export function Sidebar({ onAddNew, onManageCollections }: Props) {
         {/* Tag cloud */}
         {tags.length > 0 && (
           <>
-            <div className="px-2 pb-1 pt-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+            <div className="px-2 pb-2 pt-4 text-[11px] font-bold text-muted-foreground/70 uppercase tracking-wider flex items-center gap-1">
               <TagIcon className="h-3 w-3" />
               <span>标签云</span>
             </div>
-            <div className="px-2 pb-2 flex flex-wrap gap-1.5">
-              {tags.slice(0, 30).map((t) => (
-                <button
-                  key={t.name}
-                  onClick={() => {
-                    const s = storeActions()
-                    s.setActiveTag(activeTag === t.name ? null : t.name)
-                    s.setShowFavoritesOnly(false)
-                  }}
-                  className={cn(
-                    'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-colors border',
-                    activeTag === t.name
-                      ? 'bg-primary text-primary-foreground border-primary'
-                      : 'bg-muted/40 hover:bg-muted border-transparent',
-                  )}
-                  title={`${t.name} (${t.count})`}
-                >
-                  <span>{t.name}</span>
-                  <span className={cn(
-                    'text-[10px]',
-                    activeTag === t.name ? 'text-primary-foreground/70' : 'text-muted-foreground',
-                  )}>
-                    {t.count}
-                  </span>
-                </button>
-              ))}
+            <div className="px-1 pb-2 flex flex-wrap gap-1">
+              {tags.slice(0, 24).map((t) => {
+                const isActive = activeTag === t.name
+                return (
+                  <button
+                    key={t.name}
+                    onClick={() => {
+                      const s = storeActions()
+                      s.setActiveTag(isActive ? null : t.name)
+                      s.setShowFavoritesOnly(false)
+                    }}
+                    className={cn(
+                      'inline-flex items-center justify-center gap-1 px-2.5 h-6 rounded-md text-xs font-medium transition-all',
+                      isActive
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground',
+                    )}
+                    title={`${t.name} (${t.count} 条)`}
+                  >
+                    <span className="truncate max-w-[80px]">{t.name}</span>
+                    <span className={cn(
+                      'text-[10px] tabular-nums',
+                      isActive ? 'text-primary-foreground/70' : 'text-muted-foreground/60',
+                    )}>
+                      {t.count}
+                    </span>
+                  </button>
+                )
+              })}
             </div>
           </>
         )}
@@ -256,10 +259,10 @@ export function Sidebar({ onAddNew, onManageCollections }: Props) {
         )}
       </div>
 
-      <div className="border-t p-3 text-xs text-muted-foreground">
+      <div className="border-t p-3 text-xs text-muted-foreground bg-background/50">
         <div className="flex items-center gap-1.5">
           <Layers className="h-3.5 w-3.5" />
-          {categories.length} 个分类 / {total} 条提示词
+          {categories.length} 个分类 · {total} 条提示词
         </div>
       </div>
     </aside>
