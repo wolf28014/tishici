@@ -135,7 +135,7 @@ bun run dev
 npm run dev
 ```
 
-访问 http://localhost:3000 即可使用。
+访问 http://localhost:3005 即可使用。
 
 ### 7. 构建生产版本（可选）
 
