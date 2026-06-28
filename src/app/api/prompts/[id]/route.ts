@@ -32,12 +32,12 @@ export async function GET(_req: NextRequest, { params }: Params) {
   }
 }
 
-// PUT /api/prompts/[id]
+// PUT /api/prompts/[id] - update prompt (auto-saves a version snapshot)
 export async function PUT(req: NextRequest, { params }: Params) {
   try {
     const { id } = await params
     const body = await req.json()
-    const { title, content, description, categoryId, tags, background, isPinned, isFavorite, author, collectionId } = body
+    const { title, content, description, categoryId, tags, background, isPinned, isFavorite, author, collectionId, changeNote } = body
 
     const existing = await db.prompt.findUnique({ where: { id } })
     if (!existing) return NextResponse.json({ error: '未找到提示词' }, { status: 404 })
@@ -48,6 +48,29 @@ export async function PUT(req: NextRequest, { params }: Params) {
       if (estimatedBytes > 5 * 1024 * 1024) {
         return NextResponse.json({ error: '背景图片不能超过 5MB' }, { status: 400 })
       }
+    }
+
+    // Check if title or content changed → save a version snapshot
+    const titleChanged = title !== undefined && title.trim() !== existing.title
+    const contentChanged = content !== undefined && content.trim() !== existing.content
+    if (titleChanged || contentChanged) {
+      // Get current max versionNum
+      const lastVersion = await db.version.findFirst({
+        where: { promptId: id },
+        orderBy: { versionNum: 'desc' },
+      })
+      const nextVersionNum = (lastVersion?.versionNum || 0) + 1
+      await db.version.create({
+        data: {
+          promptId: id,
+          title: existing.title,
+          content: existing.content,
+          description: existing.description,
+          tags: existing.tags,
+          versionNum: nextVersionNum,
+          changeNote: changeNote || `保存第 ${nextVersionNum} 版`,
+        },
+      })
     }
 
     const prompt = await db.prompt.update({
@@ -92,12 +115,12 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   }
 }
 
-// PATCH /api/prompts/[id]
+// PATCH /api/prompts/[id] - quick actions
 export async function PATCH(req: NextRequest, { params }: Params) {
   try {
     const { id } = await params
     const body = await req.json()
-    const { action } = body as { action?: 'toggleFavorite' | 'togglePin' | 'incrementUsage' }
+    const { action, rating } = body as { action?: 'toggleFavorite' | 'togglePin' | 'incrementUsage' | 'setRating'; rating?: number }
 
     const existing = await db.prompt.findUnique({ where: { id } })
     if (!existing) return NextResponse.json({ error: '未找到提示词' }, { status: 404 })
@@ -106,6 +129,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     if (action === 'toggleFavorite') data.isFavorite = !existing.isFavorite
     else if (action === 'togglePin') data.isPinned = !existing.isPinned
     else if (action === 'incrementUsage') data.usageCount = existing.usageCount + 1
+    else if (action === 'setRating') {
+      const r = Math.max(0, Math.min(5, Math.floor(Number(rating) || 0)))
+      data.rating = r
+    }
     else return NextResponse.json({ error: '未知操作' }, { status: 400 })
 
     const prompt = await db.prompt.update({

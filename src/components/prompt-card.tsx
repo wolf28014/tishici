@@ -232,6 +232,12 @@ export function PromptCard({ prompt, onEdit, onShare }: Props) {
           <span className="text-xs text-muted-foreground inline-flex items-center gap-0.5 ml-1">
             <Hash className="h-3 w-3" /> {prompt.usageCount}
           </span>
+          {prompt.rating > 0 && (
+            <span className="text-xs text-amber-500 inline-flex items-center gap-0.5 ml-1" title={`评分 ${prompt.rating} 星`}>
+              <Star className="h-3 w-3 fill-amber-400" />
+              {prompt.rating}
+            </span>
+          )}
         </div>
 
         {!selectionMode && (

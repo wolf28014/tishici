@@ -56,6 +56,7 @@ export async function GET(req: NextRequest) {
     if (sort === 'recent') orderBy = [{ createdAt: 'desc' }]
     else if (sort === 'usage') orderBy = [{ usageCount: 'desc' }]
     else if (sort === 'favorite') orderBy = [{ isFavorite: 'desc' }, { createdAt: 'desc' }]
+    else if (sort === 'rating') orderBy = [{ rating: 'desc' }, { createdAt: 'desc' }]
     else if (sort === 'pinned') orderBy = [{ isPinned: 'desc' }, { sortOrder: 'asc' }, { createdAt: 'desc' }]
     else if (sort === 'custom') orderBy = [{ sortOrder: 'asc' }, { isPinned: 'desc' }, { createdAt: 'desc' }]
 

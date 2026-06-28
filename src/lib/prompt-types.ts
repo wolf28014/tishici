@@ -43,6 +43,7 @@ export type Prompt = {
   isFavorite: boolean
   isPinned: boolean
   usageCount: number
+  rating: number // 0-5 stars
   author: string | null
   source: string | null
   sortOrder: number
@@ -50,6 +51,18 @@ export type Prompt = {
   collection?: Collection | null
   createdAt: string
   updatedAt: string
+}
+
+export type Version = {
+  id: string
+  promptId: string
+  title: string
+  content: string
+  description: string | null
+  tags: string[]
+  versionNum: number
+  changeNote: string | null
+  createdAt: string
 }
 
 export type PromptInput = {

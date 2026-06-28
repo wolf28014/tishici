@@ -16,7 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import {
   Sparkles, Search, Plus, Pin, Clock, TrendingUp, Library, Star,
   Download, Tag as TagIcon, ShoppingBag, Snowflake, Clapperboard, Share2,
-  CheckSquare, X, FolderOpen,
+  CheckSquare, X, FolderOpen, Cloud, Wand2,
   type LucideIcon,
 } from 'lucide-react'
 import { Sidebar } from '@/components/sidebar'
@@ -28,6 +28,8 @@ import { ImportExportDialog } from '@/components/import-export-dialog'
 import { ShareDialog } from '@/components/share-dialog'
 import { BatchEditDialog } from '@/components/batch-edit-dialog'
 import { CollectionManagerDialog } from '@/components/collection-manager-dialog'
+import { CloudSyncDialog } from '@/components/cloud-sync-dialog'
+import { AIGenerateDialog } from '@/components/ai-generate-dialog'
 import { ThemeToggle } from '@/components/theme-toggle'
 import type { Prompt } from '@/lib/prompt-types'
 import { decodePromptFromShare } from '@/lib/prompt-types'
@@ -50,6 +52,8 @@ export default function Home() {
   const [sharingPrompt, setSharingPrompt] = React.useState<Prompt | null>(null)
   const [batchOpen, setBatchOpen] = React.useState(false)
   const [collectionOpen, setCollectionOpen] = React.useState(false)
+  const [syncOpen, setSyncOpen] = React.useState(false)
+  const [aiGenerateOpen, setAiGenerateOpen] = React.useState(false)
   const [shareImportData, setShareImportData] = React.useState<{
     title: string
     content: string
@@ -103,6 +107,39 @@ export default function Home() {
   const handleNew = () => {
     setEditing(null)
     setFormOpen(true)
+  }
+
+  const handleAIGenerateApply = (generated: {
+    title: string
+    description: string
+    content: string
+    tags: string[]
+    suggestedCategory: string
+  }) => {
+    // Open the form with the generated data pre-filled
+    setEditing({
+      id: '',
+      title: generated.title,
+      content: generated.content,
+      description: generated.description,
+      categoryId: null,
+      category: null,
+      tags: generated.tags,
+      background: null,
+      isFavorite: false,
+      isPinned: false,
+      usageCount: 0,
+      rating: 0,
+      author: 'AI 生成',
+      source: 'ai-generate',
+      sortOrder: 0,
+      collectionId: null,
+      collection: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    } as Prompt)
+    setFormOpen(true)
+    toast({ title: 'AI 生成的内容已填入表单', description: '可继续编辑后保存' })
   }
 
   const handleShare = (p: Prompt) => {
@@ -223,11 +260,29 @@ export default function Home() {
             <Button
               variant="ghost"
               size="icon"
+              onClick={() => setSyncOpen(true)}
+              title="跨设备云同步"
+              className="h-9 w-9"
+            >
+              <Cloud className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setImportExportOpen(true)}
               title="导入/导出"
               className="h-9 w-9"
             >
               <Download className="h-4 w-4" />
+            </Button>
+            <Button
+              onClick={() => setAiGenerateOpen(true)}
+              size="sm"
+              variant="outline"
+              className="gap-1.5 hidden sm:flex border-violet-300 text-violet-600 hover:bg-violet-50 dark:border-violet-700 dark:text-violet-300"
+              title="AI 自动生成提示词"
+            >
+              <Wand2 className="h-4 w-4" /> AI 生成
             </Button>
             <Button onClick={handleNew} size="sm" className="gap-1.5 hidden sm:flex">
               <Plus className="h-4 w-4" /> 新建
@@ -415,6 +470,15 @@ export default function Home() {
         open={collectionOpen}
         onOpenChange={setCollectionOpen}
       />
+      <CloudSyncDialog
+        open={syncOpen}
+        onOpenChange={setSyncOpen}
+      />
+      <AIGenerateDialog
+        open={aiGenerateOpen}
+        onOpenChange={setAiGenerateOpen}
+        onApply={handleAIGenerateApply}
+      />
 
       {/* Share link import dialog */}
       {shareImportData && (
@@ -462,7 +526,7 @@ function SortSelect({
   sortBy, setSortBy,
 }: {
   sortBy: string
-  setSortBy: (s: 'pinned' | 'recent' | 'usage' | 'favorite' | 'custom') => void
+  setSortBy: (s: 'pinned' | 'recent' | 'usage' | 'favorite' | 'custom' | 'rating') => void
 }) {
   return (
     <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
@@ -475,6 +539,7 @@ function SortSelect({
         <SelectItem value="recent">最近添加</SelectItem>
         <SelectItem value="usage">使用最多</SelectItem>
         <SelectItem value="favorite">收藏优先</SelectItem>
+        <SelectItem value="rating">评分最高</SelectItem>
       </SelectContent>
     </Select>
   )

@@ -46,16 +46,18 @@ model Prompt {
   description   String?
   categoryId    String?
   category      Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  tags          String       @default("[]") // JSON-encoded string array
-  background    String?      // JSON: {type: 'color'|'image', value: string, name?: string}
+  tags          String       @default("[]")
+  background    String?
   isFavorite    Boolean      @default(false)
   isPinned      Boolean      @default(false)
   usageCount    Int          @default(0)
+  rating        Int          @default(0) // 0-5 stars
   author        String?
   source        String?
-  sortOrder     Int          @default(0) // custom drag-and-drop order
+  sortOrder     Int          @default(0)
   collectionId  String?
   collection    Collection?  @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+  versions      Version[]
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
@@ -64,4 +66,20 @@ model Prompt {
   @@index([isPinned])
   @@index([collectionId])
   @@index([sortOrder])
+  @@index([rating])
+}
+
+model Version {
+  id          String   @id @default(cuid())
+  promptId    String
+  prompt      Prompt   @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  title       String
+  content     String
+  description String?
+  tags        String   @default("[]")
+  versionNum  Int      @default(1)
+  changeNote  String?
+  createdAt   DateTime @default(now())
+
+  @@index([promptId])
 }

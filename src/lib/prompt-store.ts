@@ -1,9 +1,9 @@
 'use client'
 
 import { create } from 'zustand'
-import type { Prompt, CategoryWithCount, TagWithCount, CollectionWithCount, Background } from '@/lib/prompt-types'
+import type { Prompt, CategoryWithCount, TagWithCount, CollectionWithCount, Background, Version } from '@/lib/prompt-types'
 
-type SortKey = 'pinned' | 'recent' | 'usage' | 'favorite' | 'custom'
+type SortKey = 'pinned' | 'recent' | 'usage' | 'favorite' | 'custom' | 'rating'
 
 type PromptStore = {
   // data
@@ -84,6 +84,23 @@ type PromptStore = {
 
   // AI background
   recommendBackground: (title: string, content: string, description?: string) => Promise<{ background: Background | null; reason: string; imageKeyword: string; recommendType: string } | null>
+
+  // AI generate
+  generatePrompt: (description: string, style: 'detailed' | 'concise' | 'creative') => Promise<{ title: string; description: string; content: string; tags: string[]; suggestedCategory: string } | null>
+
+  // AI similar
+  findSimilar: (promptId: string) => Promise<Array<Prompt & { reason: string; score: number }> | null>
+
+  // Versions
+  fetchVersions: (promptId: string) => Promise<{ versions: Version[]; current: { title: string; content: string; description: string | null; tags: string[] } } | null>
+  restoreVersion: (promptId: string, versionId: string) => Promise<boolean>
+
+  // Rating
+  setRating: (id: string, rating: number) => Promise<void>
+
+  // Sync
+  generateSyncCode: () => Promise<string | null>
+  applySyncCode: (code: string) => Promise<{ imported: number; skipped: number } | null>
 
   // import/export
   exportData: () => Promise<void>
@@ -345,6 +362,143 @@ export const usePromptStore = create<PromptStore>((set, get) => ({
     }
   },
 
+  // AI generate
+  generatePrompt: async (description, style) => {
+    try {
+      const res = await fetch('/api/ai-generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ description, style }),
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || 'AI 生成失败')
+      }
+      const data = await res.json()
+      return data.generated
+    } catch (e) {
+      set({ error: (e as Error).message })
+      return null
+    }
+  },
+
+  // AI similar
+  findSimilar: async (promptId) => {
+    try {
+      const res = await fetch('/api/ai-similar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ promptId }),
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || 'AI 推荐失败')
+      }
+      const data = await res.json()
+      return data.similar
+    } catch (e) {
+      set({ error: (e as Error).message })
+      return null
+    }
+  },
+
+  // Versions
+  fetchVersions: async (promptId) => {
+    try {
+      const res = await fetch(`/api/prompts/${promptId}/versions`)
+      if (!res.ok) throw new Error('获取版本历史失败')
+      return await res.json()
+    } catch (e) {
+      set({ error: (e as Error).message })
+      return null
+    }
+  },
+
+  restoreVersion: async (promptId, versionId) => {
+    try {
+      const res = await fetch(`/api/prompts/${promptId}/versions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ versionId }),
+      })
+      if (!res.ok) throw new Error('恢复版本失败')
+      const data = await res.json()
+      // Update the prompt in store
+      set({
+        prompts: get().prompts.map((p) => (p.id === promptId ? data.prompt : p)),
+        selectedPrompt: get().selectedPromptId === promptId ? data.prompt : get().selectedPrompt,
+      })
+      return true
+    } catch (e) {
+      set({ error: (e as Error).message })
+      return false
+    }
+  },
+
+  // Rating
+  setRating: async (id, rating) => {
+    // Optimistic update
+    const prev = get().prompts
+    set({ prompts: prev.map((p) => (p.id === id ? { ...p, rating } : p)) })
+    try {
+      const res = await fetch(`/api/prompts/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'setRating', rating }),
+      })
+      if (!res.ok) throw new Error('评分失败')
+      const data = await res.json()
+      set({
+        prompts: get().prompts.map((p) => (p.id === id ? data.prompt : p)),
+        selectedPrompt: get().selectedPromptId === id ? data.prompt : get().selectedPrompt,
+      })
+    } catch {
+      set({ prompts: prev })
+    }
+  },
+
+  // Sync
+  generateSyncCode: async () => {
+    try {
+      // Fetch all data via export endpoint
+      const res = await fetch('/api/export')
+      if (!res.ok) throw new Error('导出失败')
+      const data = await res.json()
+      // Encode via sync API
+      const encodeRes = await fetch('/api/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'encode', data }),
+      })
+      if (!encodeRes.ok) throw new Error('编码失败')
+      const { code } = await encodeRes.json()
+      return code
+    } catch (e) {
+      set({ error: (e as Error).message })
+      return null
+    }
+  },
+
+  applySyncCode: async (code) => {
+    try {
+      const decodeRes = await fetch('/api/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'decode', code }),
+      })
+      if (!decodeRes.ok) {
+        const err = await decodeRes.json()
+        throw new Error(err.error || '解码失败')
+      }
+      const { data } = await decodeRes.json()
+      // Import the data in merge mode
+      return await get().importData(data, 'merge')
+    } catch (e) {
+      set({ error: (e as Error).message })
+      return null
+    }
+  },
+
   createPrompt: async (input) => {
     try {
       const res = await fetch('/api/prompts', {
@@ -511,4 +665,4 @@ export const usePromptStore = create<PromptStore>((set, get) => ({
 }))
 
 export type { SortKey }
-export type { Prompt, CategoryWithCount, TagWithCount, CollectionWithCount, Background }
+export type { Prompt, CategoryWithCount, TagWithCount, CollectionWithCount, Background, Version }

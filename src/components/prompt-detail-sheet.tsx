@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import {
   Copy, Pencil, Trash2, Star, Pin, Check, Wand2, Clock, User, Hash, Share2,
-  Image as ImageIcon,
+  Image as ImageIcon, History,
 } from 'lucide-react'
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -24,6 +24,9 @@ import {
 } from '@/lib/prompt-types'
 import { useToast } from '@/hooks/use-toast'
 import { CategoryIcon } from '@/components/category-icon'
+import { StarRating } from '@/components/star-rating'
+import { SimilarPrompts } from '@/components/similar-prompts'
+import { VersionHistoryDialog } from '@/components/version-history-dialog'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 
@@ -51,11 +54,13 @@ export function PromptDetailSheet({ open, onOpenChange, onEdit, onShare }: Props
   const incrementUsage = usePromptStore((s) => s.incrementUsage)
   const deletePrompt = usePromptStore((s) => s.deletePrompt)
   const selectPrompt = usePromptStore((s) => s.selectPrompt)
+  const setRating = usePromptStore((s) => s.setRating)
   const { toast } = useToast()
 
   const [mode, setMode] = React.useState<'view' | 'use'>('view')
   const [values, setValues] = React.useState<Record<string, string>>({})
   const [copied, setCopied] = React.useState(false)
+  const [showVersions, setShowVersions] = React.useState(false)
 
   React.useEffect(() => {
     if (open) {
@@ -135,6 +140,15 @@ export function PromptDetailSheet({ open, onOpenChange, onEdit, onShare }: Props
                   <Clock className="h-3 w-3" /> {format(new Date(prompt.createdAt), 'yyyy-MM-dd')}
                 </span>
               </div>
+              {/* Rating */}
+              <div className="flex items-center gap-2 pt-1">
+                <span className="text-xs text-muted-foreground">我的评分：</span>
+                <StarRating
+                  value={prompt.rating}
+                  onChange={(v) => setRating(prompt.id, v)}
+                  size="sm"
+                />
+              </div>
             </div>
           </div>
         </SheetHeader>
@@ -186,6 +200,15 @@ export function PromptDetailSheet({ open, onOpenChange, onEdit, onShare }: Props
             >
               <Share2 className="h-3.5 w-3.5" />
               分享
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setShowVersions(true)}
+              className="gap-1.5"
+            >
+              <History className="h-3.5 w-3.5" />
+              版本历史
             </Button>
             <div className="ml-auto flex items-center gap-1">
               <Button
@@ -317,8 +340,21 @@ export function PromptDetailSheet({ open, onOpenChange, onEdit, onShare }: Props
               {mode === 'use' ? filledContent : prompt.content}
             </pre>
           </div>
+
+          {/* AI Similar prompts */}
+          <SimilarPrompts
+            promptId={prompt.id}
+            onSelectPrompt={(p) => selectPrompt(p)}
+          />
         </div>
       </SheetContent>
+
+      {/* Version history dialog */}
+      <VersionHistoryDialog
+        open={showVersions}
+        onOpenChange={setShowVersions}
+        promptId={prompt.id}
+      />
     </Sheet>
   )
 }
