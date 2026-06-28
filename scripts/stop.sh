@@ -6,7 +6,7 @@
 # ============================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-PROJECT_DIR="$SCRIPT_DIR"
+PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 PID_FILE="$PROJECT_DIR/.prompthub.pid"
 PORT=3005
 
@@ -22,16 +22,19 @@ echo -e "${GREEN}========================================${NC}"
 
 STOPPED=false
 
-# 方式1：通过 PID 文件停止
+# 方式1：通过 PID 文件停止（包括子进程）
 if [ -f "$PID_FILE" ]; then
     PID=$(cat "$PID_FILE")
     if kill -0 "$PID" 2>/dev/null; then
-        echo -e "${YELLOW}→ 停止进程 PID: $PID${NC}"
+        echo -e "${YELLOW}→ 停止进程树 PID: $PID${NC}"
+        # 杀死主进程及其所有子进程
+        pkill -P "$PID" 2>/dev/null || true
         kill "$PID" 2>/dev/null
         sleep 2
         # 如果还在运行，强制杀死
         if kill -0 "$PID" 2>/dev/null; then
             echo -e "${YELLOW}→ 强制停止...${NC}"
+            pkill -9 -P "$PID" 2>/dev/null || true
             kill -9 "$PID" 2>/dev/null
         fi
         STOPPED=true
@@ -51,13 +54,13 @@ if command -v lsof &> /dev/null; then
     fi
 fi
 
-# 方式3：查找 next-server 进程
-NEXT_PIDS=$(pgrep -f "next-server.*$PORT" 2>/dev/null || pgrep -f "next dev.*$PORT" 2>/dev/null)
-if [ -n "$NEXT_PIDS" ]; then
-    echo -e "${YELLOW}→ 停止 Next.js 进程${NC}"
-    echo "$NEXT_PIDS" | xargs kill 2>/dev/null
+# 方式3：查找 next-server / next dev / bun run dev / npm run dev 进程
+ALL_PIDS=$(pgrep -f "next-server.*$PORT|next dev.*$PORT|bun run dev|npm run dev" 2>/dev/null || true)
+if [ -n "$ALL_PIDS" ]; then
+    echo -e "${YELLOW}→ 停止 Next.js / Bun / NPM 相关进程${NC}"
+    echo "$ALL_PIDS" | xargs kill 2>/dev/null
     sleep 2
-    echo "$NEXT_PIDS" | xargs kill -9 2>/dev/null
+    echo "$ALL_PIDS" | xargs kill -9 2>/dev/null
     STOPPED=true
 fi
 
@@ -66,3 +69,4 @@ if [ "$STOPPED" = true ]; then
 else
     echo -e "${YELLOW}ℹ PromptHub 未在运行${NC}"
 fi
+

@@ -2,26 +2,30 @@
 # PromptHub systemd 服务文件
 # 功能：开机自动启动 PromptHub 并后台运行
 #
-# 安装方法（需要 root 权限）：
+# 安装方法：
+#   方式一（推荐）：使用安装脚本
+#     sudo bash scripts/install-service.sh
 #
-#   1. 复制此文件到 systemd 目录：
-#      sudo cp prompthub.service /etc/systemd/system/
+#   方式二（手动安装）：
+#     1. 复制此文件到 systemd 目录：
+#        sudo cp scripts/prompthub.service /etc/systemd/system/
 #
-#   2. 修改文件中的路径为你实际的路径：
-#      sudo nano /etc/systemd/system/prompthub.service
-#      把 /home/z/my-project 改成你的实际路径
+#     2. 修改文件中的路径为你实际的路径：
+#        sudo nano /etc/systemd/system/prompthub.service
+#        把所有 /home/z/my-project 改成你的实际路径
+#        把 User=z 改成你的用户名
 #
-#   3. 重新加载 systemd：
-#      sudo systemctl daemon-reload
+#     3. 重新加载 systemd：
+#        sudo systemctl daemon-reload
 #
-#   4. 启用开机自启：
-#      sudo systemctl enable prompthub
+#     4. 启用开机自启：
+#        sudo systemctl enable prompthub
 #
-#   5. 立即启动服务：
-#      sudo systemctl start prompthub
+#     5. 立即启动服务：
+#        sudo systemctl start prompthub
 #
-#   6. 查看状态：
-#      sudo systemctl status prompthub
+#     6. 查看状态：
+#        sudo systemctl status prompthub
 #
 # 常用命令：
 #   启动：sudo systemctl start prompthub
@@ -39,19 +43,20 @@ After=network.target
 
 [Service]
 Type=simple
+# ⚠️ 修改为你的用户名（用 whoami 命令查看）
 User=z
 Group=z
 
 # ⚠️ 修改为你的实际项目路径
 WorkingDirectory=/home/z/my-project
 
-# ⚠️ 修改为你的实际路径（bun 或 npm）
-# 使用 Bun：
+# ⚠️ 修改为你的实际路径
+# 使用 Bun（推荐，更快）：
 ExecStart=/home/z/.bun/bin/bun run dev
-# 使用 npm：
+# 使用 npm（如果没装 bun）：
 # ExecStart=/usr/bin/npm run dev
 
-# 自动重启
+# 自动重启：服务异常退出后 5 秒自动重启
 Restart=always
 RestartSec=5
 
@@ -60,7 +65,7 @@ Environment=NODE_ENV=development
 Environment=PORT=3005
 Environment=DATABASE_URL=file:./db/custom.db
 
-# 日志
+# 日志输出到 systemd journal
 StandardOutput=journal
 StandardError=journal
 SysIdentifier=prompthub

@@ -8,9 +8,9 @@
 
 set -e
 
-# 项目目录（脚本所在目录的上级）
+# 获取项目根目录（scripts 的上级目录）
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-PROJECT_DIR="$SCRIPT_DIR"
+PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 PID_FILE="$PROJECT_DIR/.prompthub.pid"
 LOG_FILE="$PROJECT_DIR/prompthub.log"
 PORT=3005
@@ -22,10 +22,12 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
 echo -e "${BLUE}========================================${NC}"
 echo -e "${BLUE}  PromptHub 启动脚本${NC}"
+echo -e "${BLUE}  项目目录：$PROJECT_DIR${NC}"
+echo -e "${BLUE}  端口：$PORT${NC}"
 echo -e "${BLUE}========================================${NC}"
 
 # 检查是否已运行
@@ -34,7 +36,8 @@ if [ -f "$PID_FILE" ]; then
     if kill -0 "$OLD_PID" 2>/dev/null; then
         echo -e "${YELLOW}⚠ PromptHub 已在运行（PID: $OLD_PID）${NC}"
         echo -e "  访问：http://localhost:$PORT"
-        echo -e "  停止：./stop.sh"
+        echo -e "  停止：./scripts/stop.sh"
+        echo -e "  状态：./scripts/status.sh"
         exit 0
     else
         rm -f "$PID_FILE"
@@ -46,6 +49,7 @@ if command -v lsof &> /dev/null; then
     if lsof -i :$PORT &> /dev/null; then
         echo -e "${RED}✗ 端口 $PORT 已被占用${NC}"
         echo -e "  请先释放端口或修改 package.json 中的端口"
+        echo -e "  查看占用进程：lsof -i :$PORT"
         exit 1
     fi
 fi
@@ -76,13 +80,19 @@ if [ ! -f "db/custom.db" ]; then
     $RUN_CMD run db:generate 2>/dev/null || npx prisma generate
 fi
 
+# 检查 Prisma Client 是否已生成
+if [ ! -f "node_modules/.prisma/client/index.js" ]; then
+    echo -e "${YELLOW}→ 生成 Prisma Client...${NC}"
+    $RUN_CMD run db:generate 2>/dev/null || npx prisma generate
+fi
+
 # 检查是否有种子数据（可选）
 if [ -f "db/custom.db" ]; then
     PROMPT_COUNT=$(sqlite3 db/custom.db "SELECT COUNT(*) FROM Prompt;" 2>/dev/null || echo "0")
     if [ "$PROMPT_COUNT" = "0" ] || [ -z "$PROMPT_COUNT" ]; then
         echo -e "${YELLOW}→ 导入种子数据中...${NC}"
         $RUN_CMD run db:push 2>/dev/null || true
-        bunx tsx scripts/seed.ts 2>/dev/null || npx tsx scripts/seed.ts 2>/dev/null || echo "  种子数据导入失败，请手动运行：bunx tsx scripts/seed.ts"
+        bunx tsx scripts/seed.ts 2>/dev/null || npx tsx scripts/seed.ts 2>/dev/null || echo -e "  ${YELLOW}种子数据导入失败，请手动运行：bunx tsx scripts/seed.ts${NC}"
     fi
 fi
 
@@ -98,15 +108,21 @@ DEV_PID=$!
 echo $DEV_PID > "$PID_FILE"
 
 # 等待服务启动
-echo -e "${BLUE}→ 等待服务启动...${NC}"
+echo -ne "${BLUE}→ 等待服务启动${NC}"
 for i in {1..30}; do
     if curl -s "http://localhost:$PORT" > /dev/null 2>&1; then
+        echo ""
+        echo -e "${GREEN}========================================${NC}"
         echo -e "${GREEN}✓ PromptHub 启动成功！${NC}"
+        echo -e "${GREEN}========================================${NC}"
         echo -e ""
         echo -e "  ${GREEN}访问地址：http://localhost:$PORT${NC}"
         echo -e "  PID：$DEV_PID"
         echo -e "  日志：tail -f $LOG_FILE"
-        echo -e "  停止：./stop.sh"
+        echo -e ""
+        echo -e "  停止：./scripts/stop.sh"
+        echo -e "  重启：./scripts/restart.sh"
+        echo -e "  状态：./scripts/status.sh"
         echo -e ""
         exit 0
     fi
