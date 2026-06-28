@@ -52,3 +52,27 @@ prompt
 server.log
 # Skills directory
 /skills/
+
+# Database files (SQLite)
+*.db
+*.db-journal
+
+# Upload directory (user-uploaded images)
+/upload/
+
+# Scripts output
+/scripts/*.png
+/scripts/*.json
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+
+# Mini services logs
+.zscripts/*.log
+mini-service-*.log
