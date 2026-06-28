@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import {
   Copy, Pencil, Trash2, Star, Pin, Check, Wand2, Clock, User, Hash, Share2,
+  Image as ImageIcon,
 } from 'lucide-react'
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -24,6 +25,17 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import { CategoryIcon } from '@/components/category-icon'
 import { format } from 'date-fns'
+import { cn } from '@/lib/utils'
+
+function isLightColor(hex: string): boolean {
+  const m = hex.match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i)
+  if (!m) return true
+  const r = parseInt(m[1], 16)
+  const g = parseInt(m[2], 16)
+  const b = parseInt(m[3], 16)
+  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+  return lum > 0.5
+}
 
 type Props = {
   open: boolean
@@ -247,6 +259,43 @@ export function PromptDetailSheet({ open, onOpenChange, onEdit, onShare }: Props
           {mode === 'use' && variables.length === 0 && (
             <div className="mb-4 rounded-md border border-dashed p-3 text-sm text-muted-foreground">
               该提示词没有变量占位符，可直接复制使用。
+            </div>
+          )}
+
+          {/* Background preview */}
+          {prompt.background && (
+            <div className="mb-4 space-y-2">
+              <h4 className="text-sm font-medium flex items-center gap-1.5">
+                <ImageIcon className="h-4 w-4 text-violet-500" />
+                背景设置
+              </h4>
+              <div className="rounded-lg border overflow-hidden">
+                <div
+                  className="h-32 w-full flex items-center justify-center"
+                  style={
+                    prompt.background.type === 'color'
+                      ? { backgroundColor: prompt.background.value }
+                      : {
+                          backgroundImage: `url(${prompt.background.value})`,
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center',
+                        }
+                  }
+                >
+                  <span
+                    className={cn(
+                      'text-xs font-medium px-2.5 py-1 rounded',
+                      prompt.background.type === 'color' && isLightColor(prompt.background.value)
+                        ? 'bg-black/10 text-black'
+                        : 'bg-white/15 text-white',
+                    )}
+                  >
+                    {prompt.background.type === 'color'
+                      ? (prompt.background.name || prompt.background.value)
+                      : (prompt.background.name || '自定义图片')}
+                  </span>
+                </div>
+              </div>
             </div>
           )}
 

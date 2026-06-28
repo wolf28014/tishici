@@ -24,6 +24,7 @@ export type Prompt = {
   categoryId: string | null
   category: (Category & { parent?: Category | null }) | null
   tags: string[]
+  background: Background | null
   isFavorite: boolean
   isPinned: boolean
   usageCount: number
@@ -39,9 +40,45 @@ export type PromptInput = {
   description?: string
   categoryId?: string | null
   tags?: string[]
+  background?: Background | null
   isPinned?: boolean
   isFavorite?: boolean
   author?: string
+}
+
+// Background type: preset color or custom uploaded image
+export type Background = {
+  type: 'color' | 'image'
+  value: string // hex color OR data URL (base64)
+  name?: string // optional label
+}
+
+// 6 preset backgrounds from light to dark
+export const PRESET_BACKGROUNDS: Background[] = [
+  { type: 'color', value: '#FFFFFF', name: '纯白' },
+  { type: 'color', value: '#F3F4F6', name: '浅灰' },
+  { type: 'color', value: '#D1D5DB', name: '中灰' },
+  { type: 'color', value: '#6B7280', name: '深灰' },
+  { type: 'color', value: '#374151', name: '墨灰' },
+  { type: 'color', value: '#111827', name: '近黑' },
+]
+
+export function parseBackground(bg: string | null | undefined): Background | null {
+  if (!bg) return null
+  try {
+    const parsed = JSON.parse(bg)
+    if (parsed && typeof parsed === 'object' && (parsed.type === 'color' || parsed.type === 'image') && typeof parsed.value === 'string') {
+      return parsed as Background
+    }
+  } catch {
+    // ignore
+  }
+  return null
+}
+
+export function serializeBackground(bg: Background | null | undefined): string | null {
+  if (!bg) return null
+  return JSON.stringify(bg)
 }
 
 export type TagWithCount = {

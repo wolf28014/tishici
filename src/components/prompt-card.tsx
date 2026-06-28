@@ -2,12 +2,13 @@
 
 import * as React from 'react'
 import {
-  Card, CardHeader, CardContent, CardFooter,
+  Card, CardHeader, CardFooter,
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
   Star, Pin, Copy, Check, Hash, MoreVertical, Pencil, Trash2, Share2,
+  Eye, ImageIcon,
 } from 'lucide-react'
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -19,6 +20,7 @@ import {
 import { usePromptStore } from '@/lib/prompt-store'
 import { CategoryIcon } from '@/components/category-icon'
 import { useToast } from '@/hooks/use-toast'
+import { cn } from '@/lib/utils'
 
 type Props = {
   prompt: Prompt
@@ -32,6 +34,7 @@ export function PromptCard({ prompt, onEdit, onShare }: Props) {
   const [copied, setCopied] = React.useState(false)
 
   const color = getColorClass(prompt.category?.color)
+  const hasBackground = !!prompt.background
 
   const handleCopy = async (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -77,8 +80,24 @@ export function PromptCard({ prompt, onEdit, onShare }: Props) {
   return (
     <Card
       onClick={handleCardClick}
-      className="group relative cursor-pointer hover:shadow-md transition-shadow hover:border-primary/40"
+      className="group relative cursor-pointer hover:shadow-md transition-shadow hover:border-primary/40 overflow-hidden"
     >
+      {/* Background indicator strip (top of card) */}
+      {hasBackground && (
+        <div
+          className="h-1.5 w-full"
+          style={
+            prompt.background!.type === 'color'
+              ? { backgroundColor: prompt.background!.value }
+              : {
+                  backgroundImage: `url(${prompt.background!.value})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }
+          }
+        />
+      )}
+
       {prompt.isPinned && (
         <div className="absolute -top-2 -right-2 z-10">
           <div className="flex h-7 w-7 items-center justify-center rounded-full bg-amber-500 text-white shadow-md">
@@ -90,14 +109,25 @@ export function PromptCard({ prompt, onEdit, onShare }: Props) {
       <CardHeader className="pb-3 space-y-2">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
-            {prompt.category && (
-              <div className="mb-1.5">
+            <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
+              {prompt.category && (
                 <Badge variant="outline" className={`gap-1 ${color.text} ${color.border} ${color.soft}`}>
                   <CategoryIcon name={prompt.category.icon} className="h-3 w-3" />
+                  {prompt.category.parent ? prompt.category.parent.name : prompt.category.name}
+                </Badge>
+              )}
+              {prompt.category?.parent && (
+                <Badge variant="outline" className={`gap-1 ${color.text} ${color.border} ${color.soft} text-[10px]`}>
                   {prompt.category.name}
                 </Badge>
-              </div>
-            )}
+              )}
+              {hasBackground && (
+                <Badge variant="outline" className="gap-1 text-[10px]" title="已设置背景">
+                  <ImageIcon className="h-2.5 w-2.5" />
+                  {prompt.background!.type === 'color' ? (prompt.background!.name || prompt.background!.value) : '自定义'}
+                </Badge>
+              )}
+            </div>
             <h3 className="font-semibold text-base leading-snug line-clamp-2 break-words">
               {prompt.title}
             </h3>
@@ -136,18 +166,17 @@ export function PromptCard({ prompt, onEdit, onShare }: Props) {
             </DropdownMenu>
           </div>
         </div>
-        {prompt.description && (
+        {prompt.description ? (
           <p className="text-sm text-muted-foreground line-clamp-2">
             {prompt.description}
           </p>
+        ) : (
+          <p className="text-xs text-muted-foreground italic flex items-center gap-1">
+            <Eye className="h-3 w-3" />
+            点击查看提示词内容
+          </p>
         )}
       </CardHeader>
-
-      <CardContent className="pb-3">
-        <div className="rounded-md bg-muted/40 p-2.5 text-xs text-muted-foreground font-mono line-clamp-3 break-words">
-          {prompt.content}
-        </div>
-      </CardContent>
 
       <CardFooter className="pt-0 flex items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-1.5 min-w-0 flex-1">

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { parseBackground, serializeBackground, type Background } from '@/lib/prompt-types'
 
 function parseTags(tags: string): string[] {
   try {
@@ -66,6 +67,7 @@ export async function GET(req: NextRequest) {
     const result = prompts.map((p) => ({
       ...p,
       tags: parseTags(p.tags),
+      background: parseBackground(p.background),
     }))
 
     return NextResponse.json({ prompts: result })
@@ -79,10 +81,19 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { title, content, description, categoryId, tags, isPinned, isFavorite, author } = body
+    const { title, content, description, categoryId, tags, background, isPinned, isFavorite, author } = body
 
     if (!title?.trim() || !content?.trim()) {
       return NextResponse.json({ error: '标题和内容不能为空' }, { status: 400 })
+    }
+
+    // Validate background image size (5MB limit for base64 data URL)
+    if (background && background.type === 'image' && typeof background.value === 'string') {
+      // base64 string length ≈ 4/3 * actual bytes
+      const estimatedBytes = (background.value.length * 3) / 4
+      if (estimatedBytes > 5 * 1024 * 1024) {
+        return NextResponse.json({ error: '背景图片不能超过 5MB' }, { status: 400 })
+      }
     }
 
     const prompt = await db.prompt.create({
@@ -92,6 +103,7 @@ export async function POST(req: NextRequest) {
         description: description?.trim() || null,
         categoryId: categoryId || null,
         tags: JSON.stringify(Array.isArray(tags) ? tags : []),
+        background: serializeBackground(background as Background | null | undefined),
         isPinned: Boolean(isPinned),
         isFavorite: Boolean(isFavorite),
         author: author?.trim() || '匿名',
@@ -99,7 +111,7 @@ export async function POST(req: NextRequest) {
       include: { category: { include: { parent: true } } },
     })
 
-    return NextResponse.json({ prompt: { ...prompt, tags: parseTags(prompt.tags) } })
+    return NextResponse.json({ prompt: { ...prompt, tags: parseTags(prompt.tags), background: parseBackground(prompt.background) } })
   } catch (err) {
     console.error('POST /api/prompts error:', err)
     return NextResponse.json({ error: '创建提示词失败' }, { status: 500 })

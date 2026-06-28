@@ -17,6 +17,7 @@ type ImportBody = {
     description?: string | null
     categoryName?: string | null
     tags?: string[]
+    background?: { type: 'color' | 'image'; value: string; name?: string } | null
     isPinned?: boolean
     isFavorite?: boolean
     author?: string | null
@@ -103,6 +104,7 @@ export async function POST(req: NextRequest) {
           description: p.description || null,
           categoryId: catId,
           tags: JSON.stringify(p.tags || []),
+          background: p.background ? JSON.stringify(p.background) : null,
           isPinned: p.isPinned || false,
           isFavorite: p.isFavorite || false,
           author: p.author || '匿名',

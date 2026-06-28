@@ -14,12 +14,14 @@ import {
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
-import { X, Plus, Sparkles, Wand2 } from 'lucide-react'
+import { X, Plus, Sparkles, Wand2, Image as ImageIcon } from 'lucide-react'
 import { usePromptStore } from '@/lib/prompt-store'
-import type { Prompt } from '@/lib/prompt-types'
+import type { Prompt, Background } from '@/lib/prompt-types'
 import { extractVariables } from '@/lib/prompt-types'
 import { useToast } from '@/hooks/use-toast'
 import { CategoryIcon, ICON_NAMES } from '@/components/category-icon'
+import { BackgroundSelector } from '@/components/background-selector'
+import { cn } from '@/lib/utils'
 
 type Props = {
   open: boolean
@@ -31,7 +33,7 @@ const COLOR_OPTIONS = ['rose', 'emerald', 'amber', 'sky', 'violet', 'teal', 'pin
 
 export function PromptFormDialog({ open, onOpenChange, editPrompt }: Props) {
   const isEdit = !!editPrompt
-  const { categories, createPrompt, updatePrompt } = usePromptStore()
+  const { categories, createPrompt, updatePrompt, tags: allTags } = usePromptStore()
   const { toast } = useToast()
 
   const [title, setTitle] = React.useState('')
@@ -40,6 +42,7 @@ export function PromptFormDialog({ open, onOpenChange, editPrompt }: Props) {
   const [categoryId, setCategoryId] = React.useState<string>('none')
   const [tagsInput, setTagsInput] = React.useState('')
   const [tags, setTags] = React.useState<string[]>([])
+  const [background, setBackground] = React.useState<Background | null>(null)
   const [author, setAuthor] = React.useState('匿名')
   const [isPinned, setIsPinned] = React.useState(false)
   const [isFavorite, setIsFavorite] = React.useState(false)
@@ -51,6 +54,27 @@ export function PromptFormDialog({ open, onOpenChange, editPrompt }: Props) {
   const [newCatColor, setNewCatColor] = React.useState('violet')
   const [newCatParent, setNewCatParent] = React.useState<string>('none')
 
+  // Common tags (top 12 by usage) - exclude already selected
+  const commonTags = React.useMemo(() => {
+    return allTags
+      .filter((t) => !tags.includes(t.name))
+      .slice(0, 12)
+      .map((t) => t.name)
+  }, [allTags, tags])
+
+  // Common categories (top 8 by total prompt count, including children)
+  const commonCategories = React.useMemo(() => {
+    const flat: Array<{ id: string; name: string; icon: string | null; color: string | null; count: number; parentName?: string }> = []
+    for (const c of categories) {
+      const totalCount = c._count.prompts + (c.children?.reduce((s, ch) => s + ch._count.prompts, 0) || 0)
+      flat.push({ id: c.id, name: c.name, icon: c.icon, color: c.color, count: totalCount })
+      for (const sub of c.children || []) {
+        flat.push({ id: sub.id, name: sub.name, icon: sub.icon, color: sub.color, count: sub._count.prompts, parentName: c.name })
+      }
+    }
+    return flat.sort((a, b) => b.count - a.count).slice(0, 8)
+  }, [categories])
+
   React.useEffect(() => {
     if (!open) return
     if (editPrompt) {
@@ -60,6 +84,7 @@ export function PromptFormDialog({ open, onOpenChange, editPrompt }: Props) {
       setCategoryId(editPrompt.categoryId || 'none')
       setTags(editPrompt.tags || [])
       setTagsInput('')
+      setBackground(editPrompt.background || null)
       setAuthor(editPrompt.author || '匿名')
       setIsPinned(editPrompt.isPinned)
       setIsFavorite(editPrompt.isFavorite)
@@ -70,6 +95,7 @@ export function PromptFormDialog({ open, onOpenChange, editPrompt }: Props) {
       setCategoryId('none')
       setTags([])
       setTagsInput('')
+      setBackground(null)
       setAuthor('匿名')
       setIsPinned(false)
       setIsFavorite(false)
@@ -137,6 +163,7 @@ export function PromptFormDialog({ open, onOpenChange, editPrompt }: Props) {
       description: description.trim() || undefined,
       categoryId: categoryId === 'none' ? null : categoryId,
       tags,
+      background,
       author: author.trim() || '匿名',
       isPinned,
       isFavorite,
@@ -212,32 +239,61 @@ export function PromptFormDialog({ open, onOpenChange, editPrompt }: Props) {
               </Button>
             </div>
             {!showNewCat ? (
-              <Select value={categoryId} onValueChange={setCategoryId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="选择分类" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">未分类</SelectItem>
-                  {categories.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      <span className="inline-flex items-center gap-2">
-                        <CategoryIcon name={c.icon} className="h-3.5 w-3.5" />
-                        {c.name}
-                      </span>
-                    </SelectItem>
-                  ))}
-                  {categories.map((c) =>
-                    c.children?.map((sub) => (
-                      <SelectItem key={sub.id} value={sub.id}>
+              <>
+                <Select value={categoryId} onValueChange={setCategoryId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="选择分类" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">未分类</SelectItem>
+                    {categories.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
                         <span className="inline-flex items-center gap-2">
-                          <CategoryIcon name={sub.icon} className="h-3.5 w-3.5" />
-                          <span className="text-muted-foreground">{c.name} /</span> {sub.name}
+                          <CategoryIcon name={c.icon} className="h-3.5 w-3.5" />
+                          {c.name}
                         </span>
                       </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
+                    ))}
+                    {categories.map((c) =>
+                      c.children?.map((sub) => (
+                        <SelectItem key={sub.id} value={sub.id}>
+                          <span className="inline-flex items-center gap-2">
+                            <CategoryIcon name={sub.icon} className="h-3.5 w-3.5" />
+                            <span className="text-muted-foreground">{c.name} /</span> {sub.name}
+                          </span>
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+                {commonCategories.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 items-center">
+                    <span className="text-xs text-muted-foreground">常用：</span>
+                    {commonCategories.map((c) => (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => setCategoryId(c.id)}
+                        className={cn(
+                          'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border transition-colors',
+                          categoryId === c.id
+                            ? 'bg-primary text-primary-foreground border-primary'
+                            : 'bg-muted/40 hover:bg-muted border-transparent',
+                        )}
+                      >
+                        <CategoryIcon name={c.icon} className="h-3 w-3" />
+                        {c.parentName ? `${c.parentName}/${c.name}` : c.name}
+                        <span className={cn(
+                          'text-[10px]',
+                          categoryId === c.id ? 'text-primary-foreground/70' : 'text-muted-foreground',
+                        )}>
+                          {c.count}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
             ) : (
               <div className="space-y-3 rounded-md border p-3 bg-muted/30">
                 <Input
@@ -378,6 +434,22 @@ export function PromptFormDialog({ open, onOpenChange, editPrompt }: Props) {
                 ))}
               </div>
             )}
+            {commonTags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 items-center">
+                <span className="text-xs text-muted-foreground">常用：</span>
+                {commonTags.map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setTags([...tags, t])}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-muted/40 hover:bg-muted border border-transparent transition-colors"
+                  >
+                    <Plus className="h-2.5 w-2.5" />
+                    {t}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Author */}
@@ -389,6 +461,18 @@ export function PromptFormDialog({ open, onOpenChange, editPrompt }: Props) {
               value={author}
               onChange={(e) => setAuthor(e.target.value)}
             />
+          </div>
+
+          {/* Background */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-1.5">
+              <ImageIcon className="h-3.5 w-3.5" />
+              背景选择
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              选择提示词关联的背景（颜色或图片），适用于 AI 模特、商品拍摄等场景
+            </p>
+            <BackgroundSelector value={background} onChange={setBackground} />
           </div>
 
           {/* Toggles */}

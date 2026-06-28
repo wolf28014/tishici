@@ -35,6 +35,7 @@ model Prompt {
   categoryId  String?
   category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   tags        String   @default("[]") // JSON-encoded string array
+  background  String?  // JSON: {type: 'color'|'image', value: string, name?: string}
   isFavorite  Boolean  @default(false)
   isPinned    Boolean  @default(false)
   usageCount  Int      @default(0)

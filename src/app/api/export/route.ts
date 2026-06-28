@@ -41,6 +41,7 @@ export async function GET() {
           description: p.description,
           categoryName: cat?.name || null,
           tags: parseTags(p.tags),
+          background: p.background ? JSON.parse(p.background) : null,
           isPinned: p.isPinned,
           isFavorite: p.isFavorite,
           author: p.author,
