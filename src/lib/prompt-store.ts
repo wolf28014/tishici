@@ -2,6 +2,7 @@
 
 import { create } from 'zustand'
 import type { Prompt, CategoryWithCount, TagWithCount, CollectionWithCount, Background, Version } from '@/lib/prompt-types'
+import { fetchWithAIConfig } from '@/lib/api-helpers'
 
 type SortKey = 'pinned' | 'recent' | 'usage' | 'favorite' | 'custom' | 'rating'
 
@@ -346,9 +347,8 @@ export const usePromptStore = create<PromptStore>((set, get) => ({
   // AI background
   recommendBackground: async (title, content, description) => {
     try {
-      const res = await fetch('/api/ai-background', {
+      const res = await fetchWithAIConfig('/api/ai-background', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title, content, description }),
       })
       if (!res.ok) {
@@ -365,9 +365,8 @@ export const usePromptStore = create<PromptStore>((set, get) => ({
   // AI generate
   generatePrompt: async (description, style) => {
     try {
-      const res = await fetch('/api/ai-generate', {
+      const res = await fetchWithAIConfig('/api/ai-generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ description, style }),
       })
       if (!res.ok) {
@@ -385,9 +384,8 @@ export const usePromptStore = create<PromptStore>((set, get) => ({
   // AI similar
   findSimilar: async (promptId) => {
     try {
-      const res = await fetch('/api/ai-similar', {
+      const res = await fetchWithAIConfig('/api/ai-similar', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ promptId }),
       })
       if (!res.ok) {

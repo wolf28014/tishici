@@ -120,8 +120,9 @@ export function ApiSettings({ open, onOpenChange }: Props) {
                 <ul className="list-disc list-inside space-y-0.5 ml-1">
                   <li>配置保存在浏览器本地（localStorage），不会上传</li>
                   <li>设置默认 API 后，AI 功能将使用该配置</li>
-                  <li>留空使用 Z.ai 默认配置（沙箱环境自动可用）</li>
-                  <li>支持 OpenAI、Anthropic、Azure、自定义兼容 API</li>
+                  <li><b>本地运行</b>：需要填写 API Key（从 https://chat.z.ai 获取）</li>
+                  <li><b>沙箱环境</b>：Z.ai API Key 可留空，自动使用内置服务</li>
+                  <li>支持 Z.ai、OpenAI、Anthropic、Azure、自定义 API</li>
                 </ul>
               </div>
             </div>
@@ -207,37 +208,57 @@ export function ApiSettings({ open, onOpenChange }: Props) {
                   </div>
                 </div>
 
+                {/* API Base URL - Z.ai 可选，其他必填 */}
                 {config.provider !== 'zai' && (
-                  <div className="space-y-2">
-                    <div className="space-y-1">
-                      <Label className="text-[10px] text-muted-foreground">API Base URL</Label>
-                      <Input
-                        value={config.baseUrl}
-                        onChange={(e) => handleUpdate(config.id, { baseUrl: e.target.value })}
-                        className="h-8 text-xs font-mono"
-                        placeholder="https://api.openai.com/v1"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-[10px] text-muted-foreground">API Key</Label>
-                      <div className="flex gap-1">
-                        <Input
-                          type={showKeys[config.id] ? 'text' : 'password'}
-                          value={config.apiKey}
-                          onChange={(e) => handleUpdate(config.id, { apiKey: e.target.value })}
-                          className="h-8 text-xs font-mono"
-                          placeholder="sk-..."
-                        />
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => toggleShowKey(config.id)}
-                        >
-                          {showKeys[config.id] ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                        </Button>
-                      </div>
-                    </div>
+                  <div className="space-y-1">
+                    <Label className="text-[10px] text-muted-foreground">API Base URL</Label>
+                    <Input
+                      value={config.baseUrl}
+                      onChange={(e) => handleUpdate(config.id, { baseUrl: e.target.value })}
+                      className="h-8 text-xs font-mono"
+                      placeholder="https://api.openai.com/v1"
+                    />
+                  </div>
+                )}
+
+                {/* API Key - 所有服务商都支持 */}
+                <div className="space-y-1">
+                  <Label className="text-[10px] text-muted-foreground">
+                    API Key{config.provider === 'zai' && '（本地运行时需要，沙箱环境可留空）'}
+                  </Label>
+                  <div className="flex gap-1">
+                    <Input
+                      type={showKeys[config.id] ? 'text' : 'password'}
+                      value={config.apiKey}
+                      onChange={(e) => handleUpdate(config.id, { apiKey: e.target.value })}
+                      className="h-8 text-xs font-mono"
+                      placeholder={
+                        config.provider === 'zai'
+                          ? 'Z.ai API Key（从 https://chat.z.ai 获取）'
+                          : 'sk-...'
+                      }
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => toggleShowKey(config.id)}
+                    >
+                      {showKeys[config.id] ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Z.ai Base URL（可选） */}
+                {config.provider === 'zai' && (
+                  <div className="space-y-1">
+                    <Label className="text-[10px] text-muted-foreground">API Base URL（可选，留空使用默认）</Label>
+                    <Input
+                      value={config.baseUrl}
+                      onChange={(e) => handleUpdate(config.id, { baseUrl: e.target.value })}
+                      className="h-8 text-xs font-mono"
+                      placeholder="https://api.z.ai/api/paas/v4"
+                    />
                   </div>
                 )}
 
