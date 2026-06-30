@@ -80,3 +80,11 @@ mini-service-*.log
 # PromptHub runtime files
 .prompthub.pid
 prompthub.log
+
+# Electron build output
+electron/dist/
+electron/node_modules/
+
+# Electron icon (uncomment to ignore)
+# electron/icon.ico
+# electron/icon.png

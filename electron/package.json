@@ -1,0 +1,54 @@
+{
+  "name": "prompthub-desktop",
+  "version": "1.0.0",
+  "description": "PromptHub - AI 提示词库桌面版",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build-win": "electron-builder --win --x64",
+    "build-mac": "electron-builder --mac --x64",
+    "build-linux": "electron-builder --linux --x64",
+    "build": "electron-builder --win --x64"
+  },
+  "author": "PromptHub",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "com.prompthub.desktop",
+    "productName": "PromptHub",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "icon.ico",
+      "icon.png"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        },
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "PromptHub"
+    },
+    "portable": {
+      "artifactName": "PromptHub-Portable-${version}.exe"
+    }
+  }
+}

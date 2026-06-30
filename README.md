@@ -4,6 +4,21 @@
 
 一个功能完整的 AI 提示词管理应用，基于 Next.js 16 + TypeScript + Tailwind CSS 4 + shadcn/ui + Prisma + Zustand 构建。
 
+## 🚀 快速启动
+
+### Windows 用户
+- **双击 `PromptHub.vbs`** — 无黑窗口，自动打开浏览器（推荐）
+- **双击 `PromptHub.bat`** — 显示启动日志
+- **打包成 EXE**：运行 `scripts/build-exe.bat`，详见 [DESKTOP.md](DESKTOP.md)
+
+### Linux / macOS 用户
+```bash
+bash scripts/start.sh
+```
+
+### 访问地址
+http://localhost:3005
+
 ## ✨ 核心功能
 
 ### 📚 提示词管理
